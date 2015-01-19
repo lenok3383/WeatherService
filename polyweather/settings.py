@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 TEMPLATE_DIRS = (
-    '/home/andy/py-test/polyweather/templates/',
+    '/home/andy/py-test/WeatherService/templates/',
     #os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
 )
 
