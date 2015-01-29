@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content  %}
+    {% csrf_token %}
+    <h2> History </h2>
+
+    <table style="width: 100%">
+        <tr>
+            <th>City</th>
+            <th>Date</th>
+            <th>Services</th>
+            <th>Urls</th>
+        </tr>
+
+        <tr>
+            {% for line in forecast_log %}
+                <td style="text-align: center ">  {{ line.city }} </td>
+                <td style="text-align: center ">  {{ line.forecast_day }} </td>
+                <td style="text-align: center ">  {{ line.services_name }} </td>
+                <td style="text-align: center "> <a href="{{ line.url }}"> check now</a> </td>
+        </tr>
+            {% endfor %}
+
+    </table>
+{% endblock %}

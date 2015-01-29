@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
   {% csrf_token %}
 
   <table style="width:100%">
@@ -14,12 +10,16 @@
     <th>Maximal temperature </th>
   </tr>
   <tr>
-    <td>  {{ location }} </td>
+    <td>
+      {% for tag, locati in location.items %}
+          {{ tag }} <b>{{ locati }}</b>
+      {% endfor %}
+    </td>
+
       {% for key, value in weather.items %}
         <td>    {{ value }} </td>
       {% endfor %}
   </tr>
+  </table>
 
-
-</body>
-</html>
+{% endblock %}

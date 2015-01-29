@@ -1,11 +1,26 @@
 from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+from weather.models import PreviousForecastModel
 
-CHOICES_DAY = (('1','today',), ('2', 'tommorow',), ('3', 'next sunday',))
-CHOICES_SERVICES = (('1','yahoo'), ('2', 'world weather online'))
+CHOICES_DAY = (('0', 'today'), ('1', 'tommorow'), ('2', 'day after tomorrow'))
+CHOICES_SERVICES = (('0', 'yahoo'), ('1', 'world weather online'))
 
 
-class ForecastForm(forms.Form):
-    city = forms.CharField(max_length=25)
-    services_name = forms.BooleanField(label="yahoo")
-    forecast_day = forms.ChoiceField(choices=CHOICES_DAY)
+class ForecastForm(forms.ModelForm):
 
+    class Meta:
+        model = PreviousForecastModel
+        fields = ['city', 'services_name', 'forecast_day']
+
+
+class RegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True, widget=forms.TextInput(
+                                attrs={'placeholder': 'E-mail address'}))
+    first_name = forms.CharField(required=True)
+    last_name = forms.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email',
+                  'username', 'password1', 'password2')
