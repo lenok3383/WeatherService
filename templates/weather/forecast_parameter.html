@@ -1,6 +1,11 @@
-<form action="/forecast/" method="post">{% csrf_token %}
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Check weather" />
 </form>
+{%  endblock %}
 
 

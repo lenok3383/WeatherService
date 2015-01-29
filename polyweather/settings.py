@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+LOGIN_URL = '/'
 
 TEMPLATE_DIRS = (
-    '/home/andy/py-test/polyweather/templates/',
-    #os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
+    os.path.join(BASE_DIR, 'templates').replace('\\','/'),
+
 )
 
 # Quick-start development settings - unsuitable for production
@@ -25,11 +26,11 @@ TEMPLATE_DIRS = (
 SECRET_KEY = '2x=ppt5f5=(l=+1*nh^tj!w^6i*lqcx+fqj=_)yjcutv^-rvs@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
