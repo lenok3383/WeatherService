@@ -32,11 +32,8 @@ class ForecastView(TemplateView):
                                         self.request.user.id)
         prev_forecast = db_forecast.get_dict_data()
         try:
-            if int(prev_forecast['services_name']):
-                forecast_tomorrow = weather_services.check_world_weather_online(
-                                                    prev_forecast['city'])
-            else:
-                forecast_tomorrow = weather_services.check_yahoo_weather(
+            forecast_tomorrow = weather_services.check_weather(
+                                            prev_forecast['services_name'],
                                             prev_forecast['city'])
         except weather_services.BaseWeatherException:
             db_forecast.delete()
