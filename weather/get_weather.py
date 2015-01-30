@@ -112,7 +112,19 @@ def check_yahoo_weather(city):
         for day in range(0, 3):
             out['weather'][str(day)] = {'maxtemp': data[day]['high'],
                                         'mintemp': data[day]['low']}
-
     except KeyError:
         raise ResposceDataError("Yahoo weather changes API")
     return out
+
+
+AVAILABLE_WEATHER_SERVICES = {'0': 'yahoo weather',
+                              '1': 'world weather online'}
+
+WEATHER_SERVICES = {'0': check_yahoo_weather,
+                    '1': check_world_weather_online}
+
+
+def check_weather(services, city):
+    return WEATHER_SERVICES[services](city)
+
+

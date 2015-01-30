@@ -1,7 +1,6 @@
 import os
-import get_weather as weather_services
-from weather.forms import ForecastForm, RegistrationForm
-from weather.models import PreviousForecastModel
+
+import django.core.exceptions
 from django.contrib import auth
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic.edit import FormView
@@ -11,7 +10,10 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import Http404
-import django.core.exceptions
+
+import get_weather as weather_services
+from weather.forms import ForecastForm, RegistrationForm
+from weather.models import PreviousForecastModel
 
 
 REV_CHOICE_DAY = {'0': 'today', '1': 'tommorow', '2': 'day after tomorrow'}
@@ -26,19 +28,12 @@ class ForecastView(TemplateView):
         return super(ForecastView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        try:
-            db_forecast = PreviousForecastModel.objects.get(
-                            id=int(kwargs['forecast_id']),
-                            user_id=self.request.user.id)
-        except django.core.exceptions.ObjectDoesNotExist:
-            raise Http404
+        db_forecast = db_request(kwargs['forecast_id'],
+                                        self.request.user.id)
         prev_forecast = db_forecast.get_dict_data()
         try:
-            if int(prev_forecast['services_name']):
-                forecast_tomorrow = weather_services.check_world_weather_online(
-                                                    prev_forecast['city'])
-            else:
-                forecast_tomorrow = weather_services.check_yahoo_weather(
+            forecast_tomorrow = weather_services.check_weather(
+                                            prev_forecast['services_name'],
                                             prev_forecast['city'])
         except weather_services.BaseWeatherException:
             db_forecast.delete()
@@ -153,8 +148,18 @@ class History(TemplateView):
             tmp = row.get_dict_data()
             tmp['services_name'] = REV_CHOICE_SERVICES[tmp['services_name']]
             tmp['forecast_day'] = REV_CHOICE_DAY[tmp['forecast_day']]
-            tmp['url'] = (os.path.join(reverse("forecast_page"), str(row.id)))
+            tmp['url'] = (os.path.join("/forecast", str(row.id)))
             tabl_row.append(tmp)
 
         context['forecast_log'] = tabl_row
         return context
+
+
+def db_request (forecast_id, user_id):
+    try:
+        db_forecast = PreviousForecastModel.objects.get(
+                            id=int(forecast_id),
+                            user_id=int(user_id))
+    except django.core.exceptions.ObjectDoesNotExist:
+            raise Http404
+    return db_forecast
