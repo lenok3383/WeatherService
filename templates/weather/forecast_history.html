@@ -3,9 +3,10 @@
 {% block content  %}
     {% csrf_token %}
 
+<div class="container">
     <h2> History </h2>
 
-    <table>
+  <table class="table table-striped">
         <tr>
             <th>City</th>
             <th>Date</th>
@@ -23,4 +24,5 @@
             {% endfor %}
 
     </table>
+</div>
 {% endblock %}

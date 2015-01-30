@@ -1,15 +1,31 @@
 {%  extends 'base.html' %}
 
 {% block content %}
-    <div id="login">
-        <form action="" method="post" name="sign-in">
-            <h1>Sign In</h1>
-        	{% csrf_token %}
-            {{ form.as_p }}
 
-            <input type="submit" value="Sign In" />
-            <a href="/registration">Registration </a>
-        </form>
-    </div>
+<div class="container">
+    <form action="" method="post" class="form-horizontal" role="form">
+        {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <p><strong>Ops...   </strong>Please enter a correct username and password. Note that both fields are case-sensitive.</p>
+            </div>
+        {% endif %}
+
+        {% csrf_token %}
+        <div class="form-group">
+
+            <label for="text">{{ form.username.label }}</label>
+            <input type="text" class="form-control" id="id_username" {{ form.username }}
+
+            <label for="pwd">{{ form.password.label }}</label>
+            <input type="password" class="form-control" id="id_password" {{ form.password }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Sign in</button>
+        <a href='/registration/'>Registration</a>
+    </form>
+</div>
+
 {% endblock %}
 

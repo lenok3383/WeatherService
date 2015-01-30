@@ -3,23 +3,25 @@
 {% block content %}
   {% csrf_token %}
 
-  <table style="width:100%">
-  <tr>
-    <th>Location</th>
-    <th>Minimal temperature </th>
-    <th>Maximal temperature </th>
-  </tr>
-  <tr>
-    <td>
-      {% for tag, locati in location.items %}
-          {{ tag }} <b>{{ locati }}</b>
-      {% endfor %}
-    </td>
+    <div class="container">
+        <h2>Forecast</h2>
+        <table class="table table-striped">
+            <tr>
+                <th>Location</th>
+                <th>Minimal temperature </th>
+                <th>Maximal temperature </th>
+            </tr>
+            <tr>
+                <td>
+                    {% for tag, locati in location.items %}
+                        {{ tag }} <b>{{ locati }}</b>
+                    {% endfor %}
+                </td>
 
-      {% for key, value in weather.items %}
-        <td>    {{ value }} </td>
-      {% endfor %}
-  </tr>
-  </table>
-
+                 {% for key, value in weather.items %}
+                    <td>    {{ value }} </td>
+                    {% endfor %}
+            </tr>
+        </table>
+    </div>
 {% endblock %}

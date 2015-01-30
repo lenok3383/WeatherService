@@ -1,11 +1,39 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Check weather" />
-</form>
+
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <p><strong>Ops...   </strong>Please enter city.</p>
+            </div>
+            {% endif %}
+
+
+<div class="container">
+    <form action="" method="post" class="form-horizontal" role="form">
+        {% csrf_token %}
+        <div class="form-group">
+
+            <label for="text">{{ form.city.label }}</label>
+            <input type="text" class="form-control" {{ form.city }}
+
+
+            <label for="text">{{ form.services_name.label }}</label>
+            <select class="form-control" id="id_services_name"
+                {{ form.services_name }}
+            </select>
+
+
+            <label for="text">{{ form.forecast_day.label }}</label>
+            <select class="form-control" id="id_forecast_day"
+                    {{ form.forecast_day }}
+            </select>
+
+        </div>
+
+        <input type="submit" value="Check weather" />
+    </form>
+</div>
 {%  endblock %}
 
 
