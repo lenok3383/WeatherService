@@ -2,8 +2,6 @@
 
 {% block content %}
   {% csrf_token %}
-
-    <div class="container">
         <h2>Forecast</h2>
         <table class="table table-striped">
             <tr>
@@ -23,5 +21,4 @@
                     {% endfor %}
             </tr>
         </table>
-    </div>
 {% endblock %}
