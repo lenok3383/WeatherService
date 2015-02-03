@@ -1,28 +1,50 @@
+
 {% extends "base.html" %}
 
 {% block content  %}
     {% csrf_token %}
 
+
+
 <div class="container">
     <h2> History </h2>
+    <div class="panel panel-default" >
+        <table class="table table-striped" >
+            <tr>
+                <th>City</th>
+                <th>Date</th>
+                <th>Services</th>
+                <th>Urls</th>
+            </tr>
 
-  <table class="table table-striped">
-        <tr>
-            <th>City</th>
-            <th>Date</th>
-            <th>Services</th>
-            <th>Urls</th>
-        </tr>
+            {% for forecast_pages in forecast_log %}
 
-        <tr>
-            {% for line in forecast_log %}
-                <td >  {{ line.city }} </td>
-                <td >  {{ line.forecast_day }} </td>
-                <td >  {{ line.services_name }} </td>
-                <td > <a href="{{ line.url }}"> check now</a> </td>
-        </tr>
+                <tr>
+                    <td >  {{ forecast_pages.city }} </td>
+                    <td >  {{ forecast_pages.forecast_day }} </td>
+                    <td >  {{ forecast_pages.services_name }} </td>
+                    <td > <a href="{{ forecast_pages.url }}"> check now</a> </td>
+                </tr>
+
             {% endfor %}
+        </table>
+    </div>
 
-    </table>
+    <nav>
+        <ul class="pager">
+            {% if forecast_log.has_previous %}
+                <li class="previous"><a href="?page={{ forecast_log.previous_page_number }}"> <span  class="step-links" aria-hidden="true">&larr;</span>Newer </a></li>
+            {% endif %}
+
+            <span class="current">
+            Page {{ forecast_log.number }} of {{ forecast_log.paginator.num_pages }}.
+      </span>
+
+            {% if forecast_log.has_next %}
+                <li class="next"><a href="?page={{ forecast_log.next_page_number }}">Older  <span class="step-links" aria-hidden="true">&rarr;</span></a></li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
+
 {% endblock %}

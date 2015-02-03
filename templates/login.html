@@ -2,8 +2,21 @@
 
 {% block content %}
 
+
 <div class="container">
-    <form action="" method="post" class="form-horizontal" role="form">
+    <div class="row">
+        <div class="col-xs-4">
+        <h2>Weather service</h2>
+        </div>
+        <div class="col-xs-4"></div>
+    </div>
+
+    <div class="row">
+    <div class="col-xs-4"></div>
+    <div class="col-xs-4">
+
+    <form action="" method="post" class="form-horizontal" role="form" class="navbar-form navbar-left" role="search">
+        <div class="form-group">
         {% csrf_token %}
 
             {% if form.errors %}
@@ -24,7 +37,10 @@
 
         <button type="submit" class="btn btn-primary">Sign in</button>
         <a href='/registration/'>Registration</a>
+        </div>
     </form>
+    </div>
+
 </div>
 
 {% endblock %}

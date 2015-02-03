@@ -3,6 +3,7 @@ import os
 import django.core.exceptions
 from django.contrib import auth
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.views.generic.edit import FormView
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect
@@ -146,16 +147,28 @@ class History(TemplateView):
         context = super(History, self).get_context_data(**kwargs)
         forecast_history = PreviousForecastModel.objects.all().filter(
                                                 user_id=self.request.user.id)
-        tabl_row = []
+        requests_history = []
         for row in forecast_history:
             tmp = row.get_dict_data()
             tmp['services_name'] = REV_CHOICE_SERVICES[tmp['services_name']]
             tmp['forecast_day'] = REV_CHOICE_DAY[tmp['forecast_day']]
-            tmp['url'] = (os.path.join("/forecast", str(row.id)))
-            tabl_row.append(tmp)
+            tmp['url'] = reverse("forecast_page",
+                                   kwargs={'forecast_id' : str(row.id)})
+            requests_history.append(tmp)
 
-        context['forecast_log'] = tabl_row
+        requests_history.reverse()
+        paginator = Paginator(requests_history, 16)
+        page = self.request.GET.get('page')
+
+        try:
+            page_requests_history = paginator.page(page)
+        except PageNotAnInteger:
+            page_requests_history = paginator.page(1)
+        except EmptyPage:
+            page_requests_history = paginator.page(paginator.num_pages)
+        context['forecast_log'] = page_requests_history
         return context
+
 
 
 def db_request (forecast_id, user_id):
