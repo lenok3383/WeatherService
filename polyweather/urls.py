@@ -12,7 +12,6 @@ urlpatterns = patterns('',
                                                     name="forecast_page"),
     url(r'^error/', ErrorView.as_view(), name="error_page"),
 
-
     url(r'^$', LogInView.as_view(), name="log_in"),
     url(r'^logout/', 'django.contrib.auth.views.logout',
                                         {'template_name': 'logout.html'}),
