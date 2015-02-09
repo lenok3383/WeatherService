@@ -1,72 +1,78 @@
-import os
-
-import django.core.exceptions
 from django.contrib import auth
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-from django.http import Http404
 
-import get_weather as weather_services
+from get_weather import GetWeather, BaseWeatherException
 from weather.forms import ForecastForm, RegistrationForm
 from weather.models import PreviousForecastModel
+import weather.weather_site_errors as site_err
 
+REV_CHOICE_DAY = {'0': 'forecast for today',
+                  '1': 'forecast for tommorow',
+                  '2': 'forecast for day after tomorrow'}
 
-REV_CHOICE_DAY = {'0': 'today', '1': 'tommorow', '2': 'day after tomorrow'}
-REV_CHOICE_SERVICES = {'0': 'yahoo', '1': 'world weather online'}
+WeatherService = GetWeather()
 
+def anon_user(User):
+    return User.is_anonymous()
 
-class ForecastView(TemplateView):
+class ForecastView(DetailView):
+    model = PreviousForecastModel
     template_name = "weather/forecast_view.html"
+    pk_url_kwarg = 'forecast_id'
+    slug_url_kwarg = 'id'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(ForecastView, self).dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        db_forecast = db_request(kwargs['forecast_id'],
-                                        self.request.user.id)
-        prev_forecast = db_forecast.get_dict_data()
+    def get(self, request, *args, **kwargs):
         try:
-            forecast_tomorrow = weather_services.check_weather(
-                                            prev_forecast['services_name'],
-                                            prev_forecast['city'])
-        except weather_services.BaseWeatherException:
-            db_forecast.delete()
-            raise Http404
+            result = super(ForecastView, self).get(self, request, *args, **kwargs)
+        except site_err.BaseSiteException as err:
+            request.session["error_msg"] = err.message
+            return HttpResponseRedirect(reverse("error_page"))
+        return result
 
+    def get_context_data(self, **kwargs):
+        if self.object.user_id_id != self.request.user.id:
+            raise site_err.UserRightError("Sorry No right for this user")
+        try:
+            service_forecast = WeatherService.weather_by_service_name(
+                                self.object.services_name,
+                                self.object.city)
+        except BaseWeatherException:
+            self.object.delete()
+            raise site_err.ExternalServicesError("City not found or server not "
+                                        "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
-        context['location'] = forecast_tomorrow['location']
-        context['weather'] = forecast_tomorrow['weather'] \
-                             [prev_forecast['forecast_day']]
+        context['city'] = service_forecast.city
+        context['country'] = service_forecast.country
+        context['weather'] = service_forecast.get_temperature(
+                                                    self.object.forecast_day)
         return context
 
 
 class ForecastParamView(FormView):
     template_name = 'weather/forecast_parameter.html'
     form_class = ForecastForm
-    success_url = '/forecast'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(ForecastParamView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        input_form_data = form.cleaned_data
-        input_form_data['user_id'] = self.request.user
+        form.instance.user_id_id = self.request.user.id
+        data = form.save()
 
-        model = PreviousForecastModel()
-        model.user_id = self.request.user
-        model.city = input_form_data['city']
-        model.forecast_day = input_form_data['forecast_day']
-        model.services_name = input_form_data['services_name']
-        model.save()
-
-        self.success_url = os.path.join(self.success_url, str(model.id))
+        self.success_url = reverse("forecast_page",
+                                   kwargs={'forecast_id': data.id})
         result = super(ForecastParamView, self).form_valid(form)
         return result
 
@@ -76,7 +82,8 @@ class ErrorView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ErrorView, self).get_context_data(**kwargs)
-        context['msg_error'] = "Oops... something wrong :)"
+        if "error_msg" in self.request.session:
+            context['error_msg'] = self.request.session['error_msg']
         return context
 
 
@@ -85,13 +92,11 @@ class LogInView(FormView):
     form_class = AuthenticationForm
     success_url = '/weather'
 
+    @method_decorator(user_passes_test(anon_user, login_url="/weather"))
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            result = HttpResponseRedirect(reverse("weather_page"))
-        else:
-            if request.REQUEST.get('next'):
-                self.success_url = request.REQUEST.get('next')
-            result = super(LogInView, self).dispatch(request)
+        if request.REQUEST.get('next'):
+            self.success_url = request.REQUEST.get('next')
+        result = super(LogInView, self).dispatch(request)
         return result
 
     def form_valid(self, form):
@@ -111,20 +116,18 @@ class RegistrationView(FormView):
     form_class = RegistrationForm
     success_url = '/weather'
 
+    @method_decorator(user_passes_test(anon_user, login_url="/weather/"))
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            result = HttpResponseRedirect(reverse("weather_page"))
-        else:
-            result = super(RegistrationView, self).dispatch(request, *args,
+        result = super(RegistrationView, self).dispatch(request, *args,
                                                             **kwargs)
-        return  result
+        return result
 
     def form_valid(self, form):
         data = form.save()
         input_registration_data = form.cleaned_data
         new_user = auth.authenticate(
-                                username=input_registration_data['username'],
-                                password=input_registration_data['password2'])
+            username=input_registration_data['username'],
+            password=input_registration_data['password2'])
         if new_user:
             result = HttpResponseRedirect(reverse("log_in"))
         else:
@@ -132,34 +135,19 @@ class RegistrationView(FormView):
         return result
 
 
-class History(TemplateView):
+class History(ListView):
     template_name = "weather/forecast_history.html"
+    context_object_name = 'forecast_log'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(History, self).dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        context = super(History, self).get_context_data(**kwargs)
-        forecast_history = PreviousForecastModel.objects.all().filter(
-                                                user_id=self.request.user.id)
-        tabl_row = []
-        for row in forecast_history:
-            tmp = row.get_dict_data()
-            tmp['services_name'] = REV_CHOICE_SERVICES[tmp['services_name']]
-            tmp['forecast_day'] = REV_CHOICE_DAY[tmp['forecast_day']]
-            tmp['url'] = (os.path.join("/forecast", str(row.id)))
-            tabl_row.append(tmp)
-
-        context['forecast_log'] = tabl_row
-        return context
-
-
-def db_request (forecast_id, user_id):
-    try:
-        db_forecast = PreviousForecastModel.objects.get(
-                            id=int(forecast_id),
-                            user_id=int(user_id))
-    except django.core.exceptions.ObjectDoesNotExist:
-            raise Http404
-    return db_forecast
+    def get_queryset(self):
+        requests_history = []
+        for row in PreviousForecastModel.objects.filter(user_id=self.request.user.id):
+            row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
+            row.url = reverse("forecast_page",
+                                   kwargs={'forecast_id' : row.id})
+            requests_history.append(row)
+        return requests_history
