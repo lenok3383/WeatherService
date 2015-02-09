@@ -13,17 +13,17 @@
         <div class="form-group">
 
             <label for="text">{{ form.city.label }}</label>
-            <input type="text" class="form-control" {{ form.city }}
+            <input type="text" class="form-control" id="{{ form.city.id }}" name="{{ form.city.name }}"/>
 
 
             <label for="text">{{ form.services_name.label }}</label>
-            <select class="form-control" id="id_services_name"
+            <select class="form-control" id="{{ form.services_name.id }}" name="{{ form.services_name.name }}"
                 {{ form.services_name }}
             </select>
 
 
             <label for="text">{{ form.forecast_day.label }}</label>
-            <select class="form-control" id="id_forecast_day"
+            <select class="form-control"
                     {{ form.forecast_day }}
             </select>
 
@@ -33,5 +33,3 @@
     </form>
 
 {%  endblock %}
-
-

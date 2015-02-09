@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block content  %}
@@ -34,9 +33,11 @@
                 <li class="previous"><a href="?page={{ forecast_log.previous_page_number }}"> <span  class="step-links" aria-hidden="true">&larr;</span>Newer </a></li>
             {% endif %}
 
+            {% if forecast_log.number %}
             <span class="current">
             Page {{ forecast_log.number }} of {{ forecast_log.paginator.num_pages }}.
-      </span>
+            </span>
+            {% endif %}
 
             {% if forecast_log.has_next %}
                 <li class="next"><a href="?page={{ forecast_log.next_page_number }}">Older  <span class="step-links" aria-hidden="true">&rarr;</span></a></li>
