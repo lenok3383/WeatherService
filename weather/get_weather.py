@@ -133,4 +133,3 @@ class GetWeather(object):
     def weather_by_service_name(self, service_name, city):
         return self.WEATHER_SERVICES[str(service_name)](self, city)
 
-

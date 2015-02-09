@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from get_weather import GetWeather, BaseWeatherException
 from weather.forms import ForecastForm, RegistrationForm
 from weather.models import PreviousForecastModel
-from weather.weather_site_errors import *
+import weather.weather_site_errors as site_err
 
 REV_CHOICE_DAY = {'0': 'forecast for today',
                   '1': 'forecast for tommorow',
@@ -35,21 +35,21 @@ class ForecastView(DetailView):
     def get(self, request, *args, **kwargs):
         try:
             result = super(ForecastView, self).get(self, request, *args, **kwargs)
-        except BaseSiteException as err:
+        except site_err.BaseSiteException as err:
             request.session["error_msg"] = err.message
             return HttpResponseRedirect(reverse("error_page"))
         return result
 
     def get_context_data(self, **kwargs):
         if self.object.user_id_id != self.request.user.id:
-            raise UserRightError("Sorry No right for this user")
+            raise site_err.UserRightError("Sorry No right for this user")
         try:
             service_forecast = WeatherService.weather_by_service_name(
                                 self.object.services_name,
                                 self.object.city)
         except BaseWeatherException:
             self.object.delete()
-            raise ExternalServicesError("City not found or server not "
+            raise site_err.ExternalServicesError("City not found or server not "
                                         "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
         context['city'] = service_forecast.city
