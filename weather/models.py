@@ -2,17 +2,28 @@ from django.core import validators
 from django.db import models
 from django.contrib.auth.models import User
 
-CHOICES_DAY = (('0', 'today'), ('1', 'tommorow'), ('2', 'day after tomorrow'))
-CHOICES_SERVICES = (('YAHOO weather', 'YAHOO weather'),
-                    ('WORLD WEATHER ONLINE', 'WORLD WEATHER ONLINE'))
-
 
 class PreviousForecastModel(models.Model):
+    SERVICE_YAHOO = 'YAHOO weather'
+    SERVICE_WWO = 'WORLD WEATHER ONLINE'
+
+    TODAY = 'today'
+    TOMMOROW = "tommorow"
+    DAY_AFTER_TOMMOROW = 'day after tomorrow'
+
+    CHOICES_SERVICES = ((SERVICE_YAHOO, 'YAHOO weather'),
+                        (SERVICE_WWO, 'WORLD WEATHER ONLINE'))
+
+    CHOICES_DAY = ((TODAY, 'Today'),
+                   (TOMMOROW, 'Tommorow'),
+                   (DAY_AFTER_TOMMOROW, 'Day after tomorrow'))
+
     city = models.CharField(max_length='30', blank=False,
-                validators=[validators.RegexValidator(regex=r'^[a-zA-z ]+$')])
-    services_name = models.CharField(max_length='30',  default='0',
+                            validators=[validators.RegexValidator(
+                                regex=r'^[a-zA-z ]+$')])
+    services_name = models.CharField(max_length='30', default=SERVICE_YAHOO,
                                      choices=CHOICES_SERVICES)
-    forecast_day = models.CharField(max_length='1', default='0',
+    forecast_day = models.CharField(max_length='30', default=TODAY,
                                     choices=CHOICES_DAY)
     user_id = models.ForeignKey(User)
 
