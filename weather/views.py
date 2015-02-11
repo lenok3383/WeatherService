@@ -148,7 +148,7 @@ class History(ListView):
         for row in PreviousForecastModel.objects.filter(
                                             user_id=self.request.user.id):
             row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
-            row.url = reverse("forecast_page", kwargs={'forecast_id' : row.id})
+            row.url = row.id
             requests_history.append(row)
         requests_history.reverse()
         return requests_history

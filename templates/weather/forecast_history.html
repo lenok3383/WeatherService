@@ -1,6 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head lang="en">
+    {% load static %}
+    <title>History</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src={% static "js/single_page.js" %}></script>
 </head>
 <body>
     {% csrf_token %}
@@ -20,7 +23,7 @@
                     <td >  {{ forecast_pages.city }} </td>
                     <td >  {{ forecast_pages.forecast_day }} </td>
                     <td >  {{ forecast_pages.services_name }} </td>
-                    <td > <a href="{{ forecast_pages.url }}"> check now</a> </td>
+                    <td > <a onclick="forecast_by_id({{ forecast_pages.url }})"> check now</a> </td>
                 </tr>
 
             {% endfor %}
@@ -29,61 +32,18 @@
     <nav>
         <ul class="pager">
             {% if page_obj.has_previous %}
-                <li> <a id="prev_bt" onclick="prevPage()">Previous</a></li>
+                <li class="previous"> <a id="prev_bt" onclick="prevPage()">Previous</a></li>
             {% endif %}
-
+                <span class="current" currp="{{ page_obj.number }}" maxp="{{ paginator.num_pages }}">
+                Page {{ page_obj.number }} of {{ paginator.num_pages }}.
+            </span>
             {% if page_obj.has_next %}
-                <li><a id="next_bt" onclick="nextPage()">Next</a></li>
+                <li class="next"><a id="next_bt" onclick="nextPage()">Next</a></li>
             {% endif %}
         </ul>
     </nav>
 
     </div>
 
-    <dl>
-        <dd class="curr_page" page_num={{ page_obj.number }}></dd>
-        <dd class="max_page" page_num={{ paginator.num_pages }}></dd>
-    </dl>
-
 </body>
-
-<script>
-function nextPage(){
-    var current_page = Number($('dd.curr_page').attr("page_num"));
-    var max_page = Number($('dd.max_page').attr("page_num"));
-        $.ajax({
-            type: 'GET',
-            url: '/history/',
-            data: {page: (current_page + 1)},
-            success: function (data) {
-                $("#history_div").html(data)
-            }
-        });
-    }
-
-function prevPage(){
-    var current_page = Number($('dd.curr_page').attr("page_num"));
-    var max_page = Number($('dd.max_page').attr("page_num"));
-    $.ajax({
-        type: 'GET',
-        url: '/history/',
-        data: {page: (current_page - 1)},
-        success: function (data) {
-            $("#history_div").html(data)
-            }
-        });
-}
-
-function forecast_by_id(id){
-    $.ajax({
-        url: "/forecast/" + String(id) + "/",
-        success: function (forecast)
-        {
-             $("#forecast_div").html(forecast);
-        }
-    });
-}
-
-</script>
-
 </html>
