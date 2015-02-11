@@ -8,6 +8,12 @@ CHOICES_SERVICES = (('YAHOO weather', 'YAHOO weather'),
 
 
 class PreviousForecastModel(models.Model):
+    SERVICE_YAHOO = 'YAHOO weather'
+    SERVICE_WOO = 'WORLD WEATHER ONLINE'
+
+    CHOICES_SERVICES = ((SERVICE_YAHOO, 'YAHOO weather'),
+                        (SERVICE_WOO, 'WORLD WEATHER ONLINE'))
+
     city = models.CharField(max_length='30', blank=False,
                 validators=[validators.RegexValidator(regex=r'^[a-zA-z ]+$')])
     services_name = models.CharField(max_length='30',  default='0',

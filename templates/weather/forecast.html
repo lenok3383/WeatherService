@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title> Weather services </title>
+    {% load static %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <script scr="{% static "single_page.js" %}" type="text/javascript"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+<!-- navigation menu -->
+<div>
+    <nav class="navbar navbar-inverse ">
+        <div class="container">
+        <ul class="nav nav-pills">
+            <li role="presentation"><a href="/">Home</a></li>
+            <li role="presentation"><a href="/history">History</a></li>
+
+            <p class="navbar-text navbar-right">Hello <b>{{ user.username }}</b>. You can </b> <a href="/logout">logout here </a></p>
+        </ul>
+        </div>
+    </nav>
+</div>
+
+<div class="container">
+
+    <div class="row">
+{# forecast parameter #}
+
+        <div class="col-xs-4 col-md-4" id="parameter_div">
+            <h3> Parameters </h3>
+            {% if form.errors %}
+            <div class="alert alert-danger" id="error-form">
+                <p><strong>Ops...   </strong>Please enter city.</p>
+            </div>
+            {% endif %}
+
+            <form id="param_form" action="" method="post" class="form-horizontal" role="form" >
+                <div class="form-group">
+
+                    {% csrf_token %}
+                <label for="text">{{ form.city.label }}</label>
+                <input type="text" class="form-control" id="{{ form.city.id }}" name="{{ form.city.name }}"/>
+
+
+                <label for="text">{{ form.services_name.label }}</label>
+                <select class="form-control" {{ form.services_name }} </select>
+
+
+                <label for="text">{{ form.forecast_day.label }}</label>
+                <select class="form-control" {{ form.forecast_day }} </select>
+                </div>
+
+            <input class="btn btn-primary" type="submit" id="submit_form" value="Check weather" />
+            </form>
+        </div>
+{# forecast history #}
+        <div class="col-xs-8 col-md-8" id="history_div">
+
+        </div>
+    </div>
+
+    <div class="row" >
+        <div class="col-xs-12">
+        </div>
+    </div>
+
+    <div class="row" >
+
+        <div class="col-xs-12 col-xs-12" id="forecast_div">
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+    window.onload=function(){
+        $.get("/history/", function (data) {
+        $("#history_div").html(data);
+            });
+    };
+
+function forecast_by_id(id){
+    $.ajax({
+        url: "/forecast/" + String(id) + "/",
+        success: function (forecast)
+        {
+             $("#forecast_div").html(forecast);
+        }
+    });
+}
+
+var frm = $('#param_form');
+frm.submit(function () {
+    $.ajax({
+        type: frm.attr('method'),
+        url: frm.attr('action'),
+        data: frm.serialize(),
+        success: function (data) {
+            var tmp = JSON.parse(data);
+            if (tmp.form_valid)
+            {
+                forecast_by_id(tmp.forecast_id);
+                $.get("/history/", function (data) {
+                    $("#history_div").html($(data).filter(".history_div"));
+                });
+            }
+            else{
+                $("#parameter_div").html(data);
+            }
+        }
+    });
+    return false;
+});
+
+
+</script>
+</body>
+</html>

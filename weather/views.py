@@ -1,3 +1,4 @@
+import json
 from django.contrib import auth
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import DetailView, ListView
@@ -14,9 +15,9 @@ from weather.forms import ForecastForm, RegistrationForm
 from weather.models import PreviousForecastModel
 import weather.weather_site_errors as site_err
 
-REV_CHOICE_DAY = {'0': 'forecast for today',
-                  '1': 'forecast for tommorow',
-                  '2': 'forecast for day after tomorrow'}
+REV_CHOICE_DAY = {'0': 'today',
+                  '1': 'tommorow',
+                  '2': 'day after tomorrow'}
 
 WeatherService = GetWeather()
 
@@ -71,11 +72,8 @@ class ForecastParamView(FormView):
     def form_valid(self, form):
         form.instance.user_id_id = self.request.user.id
         data = form.save()
-
-        self.success_url = reverse("forecast_page",
-                                   kwargs={'forecast_id': data.id})
-        result = super(ForecastParamView, self).form_valid(form)
-        return result
+        result = {'form_valid': True, 'forecast_id': data.id}
+        return HttpResponse(json.dumps(result))
 
 
 class ErrorView(TemplateView):
@@ -137,6 +135,7 @@ class RegistrationView(FormView):
 
 
 class History(ListView):
+    paginate_by = 8
     template_name = "weather/forecast_history.html"
     context_object_name = 'forecast_log'
 
@@ -151,5 +150,21 @@ class History(ListView):
             row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
             row.url = reverse("forecast_page", kwargs={'forecast_id' : row.id})
             requests_history.append(row)
+        requests_history.reverse()
         return requests_history
 
+
+class SinglePage(FormView):
+    template_name = 'weather/forecast.html'
+    form_class = ForecastForm
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(SinglePage, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.user_id_id = self.request.user.id
+        data = form.save()
+        result = {'form_valid': True, 'forecast_id': data.id}
+
+        return HttpResponse(json.dumps(result))
