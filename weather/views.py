@@ -72,10 +72,19 @@ class ForecastParamView(FormView):
     def dispatch(self, request, *args, **kwargs):
         return super(ForecastParamView, self).dispatch(request, *args, **kwargs)
 
+    def form_invalid(self, form):
+        err_list = []
+        for field, val in form.errors.items():
+            err_list.append(field.upper() +"  "+ val)
+        print err_list
+        result = dict(error_msg=form.errors.items())
+        result.update(dict(form_valid=0, error_msg=err_list))
+        return HttpResponse(json.dumps(result))
+
     def form_valid(self, form):
         form.instance.user_id_id = self.request.user.id
         data = form.save()
-        result = {'form_valid': True, 'forecast_id': data.id}
+        result = {'form_valid': 1, 'forecast_id': data.id}
         return HttpResponse(json.dumps(result))
 
 

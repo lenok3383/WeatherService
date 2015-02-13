@@ -1,6 +1,11 @@
-{% block content  %}
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head lang="en">
+</head>
+<body>
     {% csrf_token %}
-
     <h2> Error </h2>
-    {{ error_msg }}
-{% endblock %}
+    <div class="alert alert-danger" align="center">
+        {{ error_msg }}
+    </div>
+</body>
+</html>

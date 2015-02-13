@@ -1,28 +1,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head lang="en">
     {% load static %}
-    <title>History</title>
     <script src={% static "js/form.js" %}></script>
 </head>
 <body>
   <h3>Parameter</h3>
-  {% if form.errors %}
-  <div class="alert alert-danger">
-    <p><strong>Ops...   </strong>Please enter city.</p>
-  </div>
-    {% endif %}
+    <div class="alert alert-danger" id="parameter_error_msg" style="display: none"></div>
   <form action="/weather/" method="post" class="form-horizontal" role="form" id="param_form">
     {% csrf_token %}
     <div class="form-group">
-        <label for="text">{{ form.city.label }}</label>
+        <label for="{{ form.city.id }}">{{ form.city.label }}</label>
         <input type="text" class="form-control" id="{{ form.city.id }}" name="{{ form.city.name }}"/>
 
-        <label for="text">{{ form.services_name.label }}</label>
+        <label for="{{ form.services_name.id }}">{{ form.services_name.label }}</label>
         <select class="form-control" id="{{ form.services_name.id }}" name="{{ form.services_name.name }}"
             {{ form.services_name }}
         </select>
 
-        <label for="text">{{ form.forecast_day.label }}</label>
+        <label for="{{ form.forecast_day.label }}">{{ form.forecast_day.label }}</label>
         <select class="form-control"
                 {{ form.forecast_day }}
         </select>

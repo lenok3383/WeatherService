@@ -5,8 +5,11 @@ frm.submit(function () {
         url: frm.attr('action'),
         data: frm.serialize(),
         success: function (data) {
+            console.log(data);
             var tmp = JSON.parse(data);
+            console.log("form_valid:",tmp.form_valid);
             if (tmp.form_valid){
+                console.log('valid run');
                 $.ajax({
                     type: 'GET',
                     url: "/history/",
@@ -17,7 +20,8 @@ frm.submit(function () {
                 forecast_by_id(tmp.forecast_id);
             }
             else {
-                $("#parameter_div").html(data);
+                $("#parameter_error_msg").html(tmp.error_msg[0]);
+                $("#parameter_error_msg").css('display', 'block')
             }
 
         }
