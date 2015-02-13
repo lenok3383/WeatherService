@@ -8,16 +8,16 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^$', LogInView.as_view(), name="log_in"),
-    url(r'^weather/', ForecastParamView.as_view(), name="weather_page"),
-    url(r'^forecast/(?P<forecast_id>\d+)/', ForecastView.as_view(),
-                                                    name="forecast_page"),
-    url(r'history/', History.as_view(), name="history"),
-    url(r'one/', SinglePage.as_view(), name="single"),
+    url(r'index/', SinglePage.as_view(), name="single"),
 
+    url(r'history/', History.as_view(), name="history"),
+    url(r'^forecast/(?P<forecast_id>\d+)/', ForecastView.as_view(),
+        name="forecast_page"),
+    url(r'^weather/', ForecastParamView.as_view(), name="weather_page"),
     url(r'^error/', ErrorView.as_view(), name="error_page"),
 
     url(r'^logout/', 'django.contrib.auth.views.logout',
-                                        {'template_name': 'logout.html'}),
+        {'template_name': 'logout.html'}),
     url(r'^registration/',  RegistrationView.as_view(), name="reg_page"),
 
     url(r'^admin/', include(admin.site.urls)),

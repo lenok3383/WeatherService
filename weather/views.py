@@ -21,8 +21,10 @@ REV_CHOICE_DAY = {'0': 'today',
 
 WeatherService = GetWeather()
 
+
 def anon_user(User):
     return User.is_anonymous()
+
 
 class ForecastView(DetailView):
     model = PreviousForecastModel
@@ -36,7 +38,8 @@ class ForecastView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            result = super(ForecastView, self).get(self, request, *args, **kwargs)
+            result = super(ForecastView, self).get(self, request, *args,
+                                                   **kwargs)
         except site_err.BaseSiteException as err:
             request.session["error_msg"] = err.message
             return HttpResponseRedirect(reverse("error_page"))
@@ -47,17 +50,17 @@ class ForecastView(DetailView):
             raise site_err.UserRightError("Sorry No right for this user")
         try:
             service_forecast = WeatherService.weather_by_service_name(
-                                self.object.services_name,
-                                self.object.city)
+                self.object.services_name,
+                self.object.city)
         except BaseWeatherException:
             self.object.delete()
             raise site_err.ExternalServicesError("City not found or server not "
-                                        "responding. Please try again")
+                                                 "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
         context['city'] = service_forecast.city
         context['country'] = service_forecast.country
         context['weather'] = service_forecast.get_temperature(
-                                                    self.object.forecast_day)
+            self.object.forecast_day)
         return context
 
 
@@ -89,9 +92,9 @@ class ErrorView(TemplateView):
 class LogInView(FormView):
     template_name = 'login.html'
     form_class = AuthenticationForm
-    success_url = '/weather'
+    success_url = '/main'
 
-    @method_decorator(user_passes_test(anon_user, login_url="/weather"))
+    @method_decorator(user_passes_test(anon_user, login_url="/main"))
     def dispatch(self, request, *args, **kwargs):
         if request.REQUEST.get('next'):
             self.success_url = request.REQUEST.get('next')
@@ -115,10 +118,10 @@ class RegistrationView(FormView):
     form_class = RegistrationForm
     success_url = '/weather'
 
-    @method_decorator(user_passes_test(anon_user, login_url="/weather"))
+    @method_decorator(user_passes_test(anon_user, login_url="/main"))
     def dispatch(self, request, *args, **kwargs):
         result = super(RegistrationView, self).dispatch(request, *args,
-                                                            **kwargs)
+                                                        **kwargs)
         return result
 
     def form_valid(self, form):
@@ -135,7 +138,7 @@ class RegistrationView(FormView):
 
 
 class History(ListView):
-    paginate_by = 8
+    paginate_by = 10
     template_name = "weather/forecast_history.html"
     context_object_name = 'forecast_log'
 
@@ -146,7 +149,7 @@ class History(ListView):
     def get_queryset(self):
         requests_history = []
         for row in PreviousForecastModel.objects.filter(
-                                            user_id=self.request.user.id):
+                user_id=self.request.user.id):
             row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
             row.url = row.id
             requests_history.append(row)
@@ -154,17 +157,9 @@ class History(ListView):
         return requests_history
 
 
-class SinglePage(FormView):
+class SinglePage(TemplateView):
     template_name = 'weather/forecast.html'
-    form_class = ForecastForm
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(SinglePage, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        form.instance.user_id_id = self.request.user.id
-        data = form.save()
-        result = {'form_valid': True, 'forecast_id': data.id}
-
-        return HttpResponse(json.dumps(result))

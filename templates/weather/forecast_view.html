@@ -1,7 +1,9 @@
-
-{% block content %}
-  {% csrf_token %}
-        <h2>Forecast</h2>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head lang="en">
+    <title>Forecast</title>
+</head>
+<body>
+    <h3>Forecast</h3>
         <table class="table table-striped">
             <tr>
                 <th>Location</th>
@@ -10,13 +12,13 @@
             </tr>
             <tr>
                 <td>
-                        city  <b>{{ city }}</b>
-                        country  <b>{{ country }}</b>
+                    city  <b>{{ city }}</b>
+                    country  <b>{{ country }}</b>
                 </td>
-
                  {% for key, value in weather.items %}
                     <td>    {{ value }} </td>
                     {% endfor %}
             </tr>
         </table>
-{% endblock %}
+</body>
+</html>

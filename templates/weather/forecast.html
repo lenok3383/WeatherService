@@ -6,8 +6,6 @@
     <title> Weather services </title>
     {% load static %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="{% static "js/single_page.js" %}"></script>
-
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <!-- Latest compiled and minified JavaScript -->
@@ -15,77 +13,49 @@
 
 </head>
 <body>
-
-<!-- navigation menu -->
-<div>
-    <nav class="navbar navbar-inverse ">
-        <div class="container">
-        <ul class="nav nav-pills">
-
-            <p class="navbar-text navbar-right">Hello <b>{{ user.username }}</b>. You can </b> <a href="/logout">logout here </a></p>
-        </ul>
-        </div>
-    </nav>
-</div>
-
-<div class="container">
-
-    <div class="row">
-{# forecast parameter #}
-
-        <div class="col-xs-4 col-md-4 col-lg-4" id="parameter_div">
-            <h3> Parameters </h3>
-            {% if form.errors %}
-            <div class="alert alert-danger" id="error-form">
-                <p><strong>Ops...   </strong>Please enter city.</p>
+    <!-- navigation menu -->
+    <div>
+        <nav class="navbar navbar-inverse ">
+            <div class="container">
+            <ul class="nav nav-pills">
+                <p class="navbar-text navbar-right">Hello <b>{{ user.username }}</b>. You can </b> <a href="/logout">logout here </a></p>
+            </ul>
             </div>
-            {% endif %}
-
-            <form id="param_form" action="" method="post" class="form-horizontal" role="form" >
-                <div class="form-group">
-
-                    {% csrf_token %}
-                <label for="text">{{ form.city.label }}</label>
-                <input type="text" class="form-control" id="{{ form.city.id }}" name="{{ form.city.name }}"/>
-
-
-                <label for="text">{{ form.services_name.label }}</label>
-                <select class="form-control" {{ form.services_name }} </select>
-
-
-                <label for="text">{{ form.forecast_day.label }}</label>
-                <select class="form-control" {{ form.forecast_day }} </select>
-                </div>
-
-            <input class="btn btn-primary" onclick="submit_parameter_form()" type="submit" id="submit_form" value="Check weather" />
-            </form>
+        </nav>
+    </div>
+    <div class="container">
+        <div class="row">
+            <!-- parameter page -->
+            <div class="col-xs-4 col-md-4 col-lg-4" id="parameter_div"></div>
+            <!-- forecast history -->
+            <div class="col-xs-8 col-md-8 col-lg-8" id="history_div"></div>
         </div>
-{# forecast history #}
-        <div class="col-xs-8 col-md-8 col-lg-8" id="history_div">
-
+        <div class="row" >
+            <!-- empty -->
+            <div class="col-xs-12 col-md-12 col-lg-12"></div>
+        </div>
+        <div class="row" >
+            <!-- forecast -->
+            <div class="col-xs-12 col-xs-12" id="forecast_div"></div>
         </div>
     </div>
-
-    <div class="row" >
-        <div class="col-xs-12 col-md-12 col-lg-12">
-        </div>
-    </div>
-
-    <div class="row" >
-
-        <div class="col-xs-12 col-xs-12" id="forecast_div">
-
-        </div>
-
-    </div>
-
-</div>
 <script>
-    window.onload=function(){
-        $.get("/history/", function (data) {
-        $("#history_div").html(data);
-            });
-    };
+window.onload=function(){
+    $.ajax({
+        type: "GET",
+        url: "/history/",
+        success: function (data) {
+            $("#history_div").html(data);
+        }
+    });
+    $.ajax({
+        type: 'GET',
+        url: "/weather/",
+        success: function (data) {
+            $("#parameter_div").html(data)
+        }
+    });
+};
 </script>
 </body>
 </html>
