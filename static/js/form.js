@@ -1,15 +1,13 @@
 var frm = $('#param_form');
 frm.submit(function () {
+    $("#parameter_error_msg").css('display', 'none');
     $.ajax({
         type: frm.attr('method'),
         url: frm.attr('action'),
         data: frm.serialize(),
         success: function (data) {
-            console.log(data);
             var tmp = JSON.parse(data);
-            console.log("form_valid:",tmp.form_valid);
             if (tmp.form_valid){
-                console.log('valid run');
                 $.ajax({
                     type: 'GET',
                     url: "/history/",

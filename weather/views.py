@@ -76,7 +76,6 @@ class ForecastParamView(FormView):
         err_list = []
         for field, val in form.errors.items():
             err_list.append(field.upper() +"  "+ val)
-        print err_list
         result = dict(error_msg=form.errors.items())
         result.update(dict(form_valid=0, error_msg=err_list))
         return HttpResponse(json.dumps(result))
@@ -103,7 +102,7 @@ class LogInView(FormView):
     form_class = AuthenticationForm
     success_url = '/main'
 
-    @method_decorator(user_passes_test(anon_user, login_url="/main"))
+    @method_decorator(user_passes_test(anon_user, login_url="/index"))
     def dispatch(self, request, *args, **kwargs):
         if request.REQUEST.get('next'):
             self.success_url = request.REQUEST.get('next')
@@ -127,7 +126,7 @@ class RegistrationView(FormView):
     form_class = RegistrationForm
     success_url = '/weather'
 
-    @method_decorator(user_passes_test(anon_user, login_url="/main"))
+    @method_decorator(user_passes_test(anon_user, login_url="/index"))
     def dispatch(self, request, *args, **kwargs):
         result = super(RegistrationView, self).dispatch(request, *args,
                                                         **kwargs)
