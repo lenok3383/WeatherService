@@ -1,9 +1,27 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    {% load static %}
+    <meta charset="UTF-8">
+    <title> Weather services </title>
+    {% load static %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
-{% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-     <input type="submit" value="Register" />
-</form>
-{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <h3>Registration</h3>
+            <form action="" method="post" role="form">
+                <div class="form-group">
+                    {% csrf_token %}
+                    <table>{{ form }}</table>
+                </div>
+                    <input class="btn btn-primary" type="submit" value="Register"/>
+            </form>
+    </div>
+</body>
+</html>

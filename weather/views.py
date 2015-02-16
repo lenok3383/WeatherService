@@ -100,7 +100,7 @@ class ErrorView(TemplateView):
 class LogInView(FormView):
     template_name = 'login.html'
     form_class = AuthenticationForm
-    success_url = '/main'
+    success_url = '/index'
 
     @method_decorator(user_passes_test(anon_user, login_url="/index"))
     def dispatch(self, request, *args, **kwargs):
