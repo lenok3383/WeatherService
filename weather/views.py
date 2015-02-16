@@ -15,15 +15,12 @@ from weather.forms import ForecastForm, RegistrationForm
 from weather.models import PreviousForecastModel
 import weather.weather_site_errors as site_err
 
-REV_CHOICE_DAY = {'0': 'today',
-                  '1': 'tommorow',
-                  '2': 'day after tomorrow'}
 
 WeatherService = GetWeather()
 
 
-def anon_user(User):
-    return User.is_anonymous()
+def anon_user(user):
+    return user.is_anonymous()
 
 
 class ForecastView(DetailView):
@@ -38,8 +35,7 @@ class ForecastView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            result = super(ForecastView, self).get(self, request, *args,
-                                                   **kwargs)
+            result = super(ForecastView, self).get(request, *args, **kwargs)
         except site_err.BaseSiteException as err:
             request.session["error_msg"] = err.message
             return HttpResponseRedirect(reverse("error_page"))
@@ -51,16 +47,14 @@ class ForecastView(DetailView):
         try:
             service_forecast = WeatherService.weather_by_service_name(
                 self.object.services_name,
-                self.object.city)
+                self.object.city,
+                self.object.forecast_day)
         except BaseWeatherException:
             self.object.delete()
             raise site_err.ExternalServicesError("City not found or server not "
                                                  "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
-        context['city'] = service_forecast.city
-        context['country'] = service_forecast.country
-        context['weather'] = service_forecast.get_temperature(
-            self.object.forecast_day)
+        context['weather'] = service_forecast
         return context
 
 
@@ -75,7 +69,7 @@ class ForecastParamView(FormView):
     def form_invalid(self, form):
         err_list = []
         for field, val in form.errors.items():
-            err_list.append(field.upper() +"  "+ val)
+            err_list.append(field.upper() + " - " + val)
         result = dict(error_msg=form.errors.items())
         result.update(dict(form_valid=0, error_msg=err_list))
         return HttpResponse(json.dumps(result))
@@ -158,7 +152,7 @@ class History(ListView):
         requests_history = []
         for row in PreviousForecastModel.objects.filter(
                 user_id=self.request.user.id):
-            row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
+            row.forecast_day = row.forecast_day
             row.url = row.id
             requests_history.append(row)
         requests_history.reverse()

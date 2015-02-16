@@ -11,12 +11,11 @@
             </tr>
             <tr>
                 <td>
-                    city  <b>{{ city }}</b>
-                    country  <b>{{ country }}</b>
+                    city <b>{{ weather.city }}</b>
+                    country <b>{{ weather.country }}</b>
                 </td>
-                 {% for key, value in weather.items %}
-                    <td>    {{ value }} </td>
-                    {% endfor %}
+                    <td>{{ weather.min_temperature }}</td>
+                    <td>{{ weather.max_temperature }}</td>
             </tr>
         </table>
 </body>

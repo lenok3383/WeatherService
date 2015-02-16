@@ -17,6 +17,11 @@ import urllib2
 import urllib
 import urlparse
 import json
+from weather.models import PreviousForecastModel
+
+CHOICE_DAY = {PreviousForecastModel.DAY_0: 0,
+              PreviousForecastModel.DAY_1: 1,
+              PreviousForecastModel.DAY_2: 2}
 
 
 class BaseWeatherException(Exception):
@@ -38,9 +43,8 @@ class GetWeather(object):
         city = None
         country = None
         weather = {}
-
-        def get_temperature (self, day):
-            return self.weather[str(day)]
+        min_temperature = None
+        max_temperature = None
 
     def _url_for_request(self, url_base, url_data):
         url_parts = list(urlparse.urlparse(url_base))
@@ -50,7 +54,8 @@ class GetWeather(object):
         url = urlparse.urlunparse(url_parts)
         return url
 
-    def world_weather_online(self, city):
+    def world_weather_online(self, city, day):
+        day = CHOICE_DAY[day]
         forecast_for = self.ForecastData()
         wwo_key = 'caccf05de4bf3a130dcd49c9a79d5'
         wwo_bas = "http://api.worldweatheronline.com/free/v2/weather.ashx"
@@ -81,15 +86,14 @@ class GetWeather(object):
 
             data = data['data']['weather']
 
-            for day in range(0, 3):
-                forecast_for.weather[str(day)] = {
-                                'maxtemp': data[day]['maxtempC'],
-                                'mintemp': data[day]['mintempC']}
+            forecast_for.max_temperature = data[day]['maxtempC']
+            forecast_for.min_temperature = data[day]['mintempC']
         except KeyError:
             raise ResponseDataError("World weather online changes API")
         return forecast_for
 
-    def yahoo_weather(self, city):
+    def yahoo_weather(self, city, day):
+        day = CHOICE_DAY[day]
         forecast_for = self.ForecastData()
         base_url = "https://query.yahooapis.com/v1/public/yql"
         yql_query = "SELECT * FROM weather.bylocation WHERE unit='c' " \
@@ -119,17 +123,16 @@ class GetWeather(object):
             forecast_for.country = data['title'].split('-')[1].split(',')[1]
 
             data = data['item']['forecast']
-            for day in range(0, 3):
-                forecast_for.weather[str(day)] = {
-                                        'maxtemp': data[day]['high'],
-                                        'mintemp': data[day]['low']}
+            forecast_for.min_temperature = data[day]['high']
+            forecast_for.max_temperature = data[day]['low']
         except KeyError:
             raise ResponseDataError("Yahoo weather changes API")
         return forecast_for
 
-    WEATHER_SERVICES = {'YAHOO weather': yahoo_weather,
-                        'WORLD WEATHER ONLINE': world_weather_online}
+    WEATHER_SERVICES = {PreviousForecastModel.SERVICE_YAHOO: yahoo_weather,
+                        PreviousForecastModel.SERVICE_WWO: world_weather_online}
 
-    def weather_by_service_name(self, service_name, city):
-        return self.WEATHER_SERVICES[str(service_name)](self, city)
+    def weather_by_service_name(self, service_name, city, day):
+        function = self.WEATHER_SERVICES[str(service_name)]
+        return function(self, city, day)
 
