@@ -7,37 +7,38 @@
 <body>
     {% csrf_token %}
     <div class="history_div" id="history_div">
-          <h3>History</h3>
-                <table id="history_table" class="table table-striped">
+        <h3>History</h3>
+        <table id="history_table" class="table table-striped">
+            <tr>
+                <th>City</th>
+                <th>Date</th>
+                <th>Services</th>
+                <th>Urls</th>
+            </tr>
+                {% for forecast_pages in forecast_log %}
                     <tr>
-                        <th>City</th>
-                        <th>Date</th>
-                        <th>Services</th>
-                        <th>Urls</th>
+                        <td> {{ forecast_pages.city }} </td>
+                        <td> {{ forecast_pages.forecast_day }} </td>
+                        <td> {{ forecast_pages.services_name }} </td>
+                        <td> <a onclick="forecast_by_id({{ forecast_pages.url }})"> check now</a> </td>
                     </tr>
-                    {% for forecast_pages in forecast_log %}
-                        <tr>
-                            <td >  {{ forecast_pages.city }} </td>
-                            <td >  {{ forecast_pages.forecast_day }} </td>
-                            <td >  {{ forecast_pages.services_name }} </td>
-                            <td > <a onclick="forecast_by_id({{ forecast_pages.url }})"> check now</a> </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-          <nav>
-                <ul class="pager">
-                    {% if page_obj.has_previous %}
-                        <li class="previous"> <a id="prev_bt" onclick="prevPage()">Previous</a></li>
-                    {% endif %}
-                        <span class="current" currp="{{ page_obj.number }}" maxp="{{ paginator.num_pages }}">
+                {% endfor %}
+        </table>
+        <nav>
+            <ul class="pager">
+                {% if page_obj.has_previous %}
+                    <li class="previous"> <a id="prev_bt" onclick="prevPage()">Previous</a></li>
+                {% endif %}
+                {% if paginator.page %}
+                    <span class="current" currp="{{ page_obj.number }}" maxp="{{ paginator.num_pages }}">
                         Page {{ page_obj.number }} of {{ paginator.num_pages }}.
+                {% endif %}
                     </span>
-                    {% if page_obj.has_next %}
-                        <li class="next"><a id="next_bt" onclick="nextPage()">Next</a></li>
-                    {% endif %}
-                </ul>
-          </nav>
+                {% if page_obj.has_next %}
+                    <li class="next"><a id="next_bt" onclick="nextPage()">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
-
 </body>
 </html>

@@ -42,7 +42,7 @@ class ForecastView(DetailView):
         return result
 
     def get_context_data(self, **kwargs):
-        if self.object.user_id_id != self.request.user.id:
+        if self.object.user_id != self.request.user.id:
             raise site_err.UserRightError("Sorry No right for this user")
         try:
             service_forecast = WeatherService.weather_by_service_name(
@@ -75,7 +75,7 @@ class ForecastParamView(FormView):
         return HttpResponse(json.dumps(result))
 
     def form_valid(self, form):
-        form.instance.user_id_id = self.request.user.id
+        form.instance.user_id = self.request.user.id
         data = form.save()
         result = {'form_valid': 1, 'forecast_id': data.id}
         return HttpResponse(json.dumps(result))
@@ -159,9 +159,9 @@ class History(ListView):
         return requests_history
 
 
-class SinglePage(TemplateView):
+class IndexPage(TemplateView):
     template_name = 'weather/forecast.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        return super(SinglePage, self).dispatch(request, *args, **kwargs)
+        return super(IndexPage, self).dispatch(request, *args, **kwargs)

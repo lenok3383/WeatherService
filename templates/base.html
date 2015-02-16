@@ -13,27 +13,10 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
 </head>
-
 <body>
-{%  if user.username %}
-    <div>
-
-            <nav class="navbar navbar-inverse ">
-                <div class="container">
-                <ul class="nav nav-pills">
-                    <li role="presentation"><a href="/weather/">Home</a></li>
-                    <li role="presentation"><a href="/history">History</a></li>
-                    <p class="navbar-text navbar-right">Hello <b>{{ user.username }}</b>. You can </b> <a href="/logout">logout here </a></p>
-                </ul>
-                </div>
-            </nav>
-    </div>
-{% endif %}
-
-
 <div class="container">
-  {% block content  %}
-  {% endblock %}
+    {% block content  %}
+    {% endblock %}
 </div>
 </body>
 </html>
