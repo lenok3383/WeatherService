@@ -13,13 +13,17 @@
         <input type="text" class="form-control" id="{{ form.city.id }}" name="{{ form.city.name }}"/>
 
         <label for="{{ form.services_name.id }}">{{ form.services_name.label }}</label>
-        <select class="form-control" id="{{ form.services_name.id }}" name="{{ form.services_name.name }}"
-            {{ form.services_name }}
+        <select class="form-control" id="{{ form.services_name.id }}" name="{{ form.services_name.name }}">
+            {% for value, text in form.services_name.field.choices %}
+                <option value="{{ value }}">{{ text }}</option>
+            {% endfor %}
         </select>
 
-        <label for="{{ form.forecast_day.label }}">{{ form.forecast_day.label }}</label>
-        <select class="form-control"
-                {{ form.forecast_day }}
+        <label for="{{ form.forecast_day.id }}">{{ form.forecast_day.label }}</label>
+        <select class="form-control" id="{{ form.forecast_day.id }}" name="{{ form.forecast_day.name }}">
+            {% for value, text in form.forecast_day.field.choices %}
+                <option value="{{ value }}">{{ text }}</option>
+            {% endfor %}
         </select>
     </div>
         <input class="btn btn-primary" type="submit" value="Check weather" />
