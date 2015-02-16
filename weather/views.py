@@ -13,14 +13,13 @@ from weather.forms import ForecastForm, RegistrationForm
 from weather.models import PreviousForecastModel
 import weather.weather_site_errors as site_err
 
-REV_CHOICE_DAY = {'0': 'forecast for today',
-                  '1': 'forecast for tommorow',
-                  '2': 'forecast for day after tomorrow'}
 
 WeatherService = GetWeather()
 
-def anon_user(User):
-    return User.is_anonymous()
+
+def anon_user(user):
+    return user.is_anonymous()
+
 
 class ForecastView(DetailView):
     model = PreviousForecastModel
@@ -34,7 +33,7 @@ class ForecastView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            result = super(ForecastView, self).get(self, request, *args, **kwargs)
+            result = super(ForecastView, self).get(request, *args, **kwargs)
         except site_err.BaseSiteException as err:
             request.session["error_msg"] = err.message
             return HttpResponseRedirect(reverse("error_page"))
@@ -45,17 +44,15 @@ class ForecastView(DetailView):
             raise site_err.UserRightError("Sorry No right for this user")
         try:
             service_forecast = WeatherService.weather_by_service_name(
-                                self.object.services_name,
-                                self.object.city)
+                self.object.services_name,
+                self.object.city,
+                self.object.forecast_day)
         except BaseWeatherException:
             self.object.delete()
             raise site_err.ExternalServicesError("City not found or server not "
-                                        "responding. Please try again")
+                                                 "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
-        context['city'] = service_forecast.city
-        context['country'] = service_forecast.country
-        context['weather'] = service_forecast.get_temperature(
-                                                    self.object.forecast_day)
+        context['weather'] = service_forecast
         return context
 
 
@@ -119,7 +116,7 @@ class RegistrationView(FormView):
     @method_decorator(user_passes_test(anon_user, login_url="/weather/"))
     def dispatch(self, request, *args, **kwargs):
         result = super(RegistrationView, self).dispatch(request, *args,
-                                                            **kwargs)
+                                                        **kwargs)
         return result
 
     def form_valid(self, form):
@@ -145,9 +142,9 @@ class History(ListView):
 
     def get_queryset(self):
         requests_history = []
-        for row in PreviousForecastModel.objects.filter(user_id=self.request.user.id):
-            row.forecast_day = REV_CHOICE_DAY[row.forecast_day]
-            row.url = reverse("forecast_page",
-                                   kwargs={'forecast_id' : row.id})
+        for row in PreviousForecastModel.objects.filter(
+                user_id=self.request.user.id):
+            row.forecast_day = row.forecast_day
+            row.url = reverse("forecast_page", kwargs={'forecast_id': row.id})
             requests_history.append(row)
         return requests_history
