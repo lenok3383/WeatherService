@@ -19,9 +19,9 @@ import urlparse
 import json
 from weather.models import PreviousForecastModel
 
-CHOICE_DAY = {PreviousForecastModel.TODAY: 0,
-              PreviousForecastModel.TOMMOROW: 1,
-              PreviousForecastModel.DAY_AFTER_TOMMOROW: 2}
+CHOICE_DAY = {PreviousForecastModel.DAY_0: 0,
+              PreviousForecastModel.DAY_1: 1,
+              PreviousForecastModel.DAY_2: 2}
 
 
 class BaseWeatherException(Exception):
