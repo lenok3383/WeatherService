@@ -123,8 +123,8 @@ class GetWeather(object):
             forecast_for.country = data['title'].split('-')[1].split(',')[1]
 
             data = data['item']['forecast']
-            forecast_for.min_temperature = data[day]['high']
-            forecast_for.max_temperature = data[day]['low']
+            forecast_for.max_temperature = data[day]['high']
+            forecast_for.min_temperature = data[day]['low']
         except KeyError:
             raise ResponseDataError("Yahoo weather changes API")
         return forecast_for
