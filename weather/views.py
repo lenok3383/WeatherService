@@ -31,6 +31,8 @@ class ForecastView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            return HttpResponseRedirect(reverse("index"))
         return super(ForecastView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -64,6 +66,8 @@ class ForecastParamView(FormView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            return HttpResponseRedirect(reverse("index"))
         return super(ForecastParamView, self).dispatch(request, *args, **kwargs)
 
     def form_invalid(self, form):
@@ -146,6 +150,8 @@ class History(ListView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            return HttpResponseRedirect(reverse("index"))
         return super(History, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):

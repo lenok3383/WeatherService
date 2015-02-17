@@ -7,7 +7,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'polyweather.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'index/', view.IndexPage.as_view(), name="single"),
+    url(r'index/', view.IndexPage.as_view(), name="index"),
 
     url(r'^weather/', view.ForecastParamView.as_view(), name="weather_page"),
     url(r'^forecast/(?P<forecast_id>\d+)/', view.ForecastView.as_view(),
