@@ -25,7 +25,6 @@ def anon_user(user):
 
 class ForecastView(DetailView):
     model = PreviousForecastModel
-    template_name = "weather/forecast_view.html"
     pk_url_kwarg = 'forecast_id'
     slug_url_kwarg = 'id'
 
@@ -33,30 +32,30 @@ class ForecastView(DetailView):
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        return super(ForecastView, self).dispatch(request, *args, **kwargs)
+        result = super(ForecastView, self).dispatch(request, *args, **kwargs)
+        result = json.dumps(result.context_data["weather"])
+        return HttpResponse(result, content_type="application/json")
 
-    def get(self, request, *args, **kwargs):
-        try:
-            result = super(ForecastView, self).get(request, *args, **kwargs)
-        except site_err.BaseSiteException as err:
-            request.session["error_msg"] = err.message
-            return HttpResponseRedirect(reverse("error_page"))
-        return result
 
     def get_context_data(self, **kwargs):
         if self.object.user_id != self.request.user.id:
             raise site_err.UserRightError("Sorry No right for this user")
+        out = {}
         try:
             service_forecast = WeatherService.weather_by_service_name(
                 self.object.services_name,
                 self.object.city,
                 self.object.forecast_day)
+            out['city'] = service_forecast.city
+            out['country'] = service_forecast.country
+            out['max_temperature'] = service_forecast.max_temperature
+            out['min_temperature'] = service_forecast.min_temperature
         except BaseWeatherException:
             self.object.delete()
-            raise site_err.ExternalServicesError("City not found or server not "
-                                                 "responding. Please try again")
+            out[
+                "error_msg"] = "City not found or server not responding. Please try again"
         context = super(ForecastView, self).get_context_data(**kwargs)
-        context['weather'] = service_forecast
+        context['weather'] = out
         return context
 
 
@@ -76,13 +75,13 @@ class ForecastParamView(FormView):
             err_list.append(field.upper() + " - " + val)
         result = dict(error_msg=form.errors.items())
         result.update(dict(form_valid=0, error_msg=err_list))
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), content_type="application/json")
 
     def form_valid(self, form):
         form.instance.user_id = self.request.user.id
         data = form.save()
         result = {'form_valid': 1, 'forecast_id': data.id}
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result), content_type="application/json")
 
 
 class ErrorView(TemplateView):
@@ -152,15 +151,17 @@ class History(ListView):
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        return super(History, self).dispatch(request, *args, **kwargs)
+        result = super(History, self).dispatch(request, *args, **kwargs)
+        out = {}
+        for number, val in enumerate(result.context_data['forecast_log']):
+            out[number] = dict(forecast_day=val.forecast_day, url=val.id,
+                               city=val.city, services_name=val.services_name)
+        return HttpResponse(json.dumps(out), content_type="application/json")
 
     def get_queryset(self):
-        requests_history = []
-        for row in PreviousForecastModel.objects.filter(
-                user_id=self.request.user.id):
-            row.forecast_day = row.forecast_day
-            row.url = row.id
-            requests_history.append(row)
+        out = {}
+        requests_history = PreviousForecastModel.objects.filter(
+            user_id=self.request.user.id)
         requests_history.reverse()
         return requests_history
 
