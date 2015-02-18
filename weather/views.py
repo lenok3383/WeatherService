@@ -25,6 +25,7 @@ def anon_user(user):
 
 class ForecastView(DetailView):
     model = PreviousForecastModel
+    template_name = "weather/forecast_view.html"
     pk_url_kwarg = 'forecast_id'
     slug_url_kwarg = 'id'
 
@@ -32,31 +33,40 @@ class ForecastView(DetailView):
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        result = super(ForecastView, self).dispatch(request, *args, **kwargs)
-        result = json.dumps(result.context_data["weather"])
-        return HttpResponse(result, content_type="application/json")
+        return super(ForecastView, self).dispatch(request, *args, **kwargs)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            result = super(ForecastView, self).get(request, *args, **kwargs)
+        except site_err.BaseSiteException as error:
+            out = dict(error_msg=error.message)
+            return HttpResponse(json.dumps(out),
+                                content_type="application/json")
+        return result
 
     def get_context_data(self, **kwargs):
         if self.object.user_id != self.request.user.id:
             raise site_err.UserRightError("Sorry No right for this user")
-        out = {}
         try:
             service_forecast = WeatherService.weather_by_service_name(
                 self.object.services_name,
                 self.object.city,
                 self.object.forecast_day)
-            out['city'] = service_forecast.city
-            out['country'] = service_forecast.country
-            out['max_temperature'] = service_forecast.max_temperature
-            out['min_temperature'] = service_forecast.min_temperature
+            out = dict(city=service_forecast.city,
+                       country=service_forecast.country,
+                       max_temperature=service_forecast.max_temperature,
+                       min_temperature=service_forecast.min_temperature)
         except BaseWeatherException:
             self.object.delete()
-            out[
-                "error_msg"] = "City not found or server not responding. Please try again"
+            raise site_err.ExternalServicesError("City not found or server not "
+                                                 "responding. Please try again")
         context = super(ForecastView, self).get_context_data(**kwargs)
         context['weather'] = out
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        return HttpResponse(json.dumps(context['weather']),
+                            content_type="application/json")
 
 
 class ForecastParamView(FormView):
@@ -130,7 +140,7 @@ class RegistrationView(FormView):
         return result
 
     def form_valid(self, form):
-        data = form.save()
+        form.save()
         input_registration_data = form.cleaned_data
         new_user = auth.authenticate(
             username=input_registration_data['username'],
@@ -152,18 +162,23 @@ class History(ListView):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
         result = super(History, self).dispatch(request, *args, **kwargs)
-        out = {}
-        for number, val in enumerate(result.context_data['forecast_log']):
-            out[number] = dict(forecast_day=val.forecast_day, url=val.id,
-                               city=val.city, services_name=val.services_name)
-        return HttpResponse(json.dumps(out), content_type="application/json")
+        return result
 
     def get_queryset(self):
-        out = {}
         requests_history = PreviousForecastModel.objects.filter(
             user_id=self.request.user.id)
-        requests_history.reverse()
-        return requests_history
+        return requests_history.order_by('-id')
+
+    def render_to_response(self, context, **response_kwargs):
+        out = {}
+        for number, val in enumerate(context['forecast_log']):
+            out[str(number)] = dict(forecast_day=val.forecast_day, url=val.id,
+                                    city=val.city,
+                                    services_name=val.services_name)
+        out = dict(history=out, paginator=dict(current=context[
+            'page_obj'].number, maxpage=context['paginator'].num_pages))
+
+        return HttpResponse(json.dumps(out), content_type="application/json")
 
 
 class IndexPage(TemplateView):

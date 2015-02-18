@@ -3,7 +3,7 @@ window.onload=function(){
         type: "GET",
         url: "/history/",
         success: function (data) {
-            $("#history_div").html(data);
+            $("#history_div").html(history_json_as_table(data['history']));
         }
     });
     $.ajax({

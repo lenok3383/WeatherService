@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="{% static "js/global.js" %}"></script>
     <script src="{% static "js/ajax_load_pages.js" %}"></script>
 </head>
 <body>
@@ -31,8 +32,9 @@
         </div>
         <div class="row" >
             <!-- spinner -->
-            <div class="col-xs-12 col-md-12 col-lg-12" id="spinner" style="display: none">
-                <p style="text-align: center"><img src="{% static "img/ajax-loader_blue.gif" %}"/></p>
+            <div class="col-xs-12 col-md-12 col-lg-12">
+                <p id="spinner" style="display: none; text-align: center">
+                    <img src="{% static "img/ajax-loader_blue.gif" %}"/></p>
             </div>
         </div>
         <div class="row" >

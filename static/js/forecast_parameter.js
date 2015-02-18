@@ -6,22 +6,20 @@ frm.submit(function () {
         url: frm.attr('action'),
         data: frm.serialize(),
         success: function (data) {
-            var tmp = JSON.parse(data);
-            if (tmp.form_valid){
+            if (data.form_valid){
                 $.ajax({
                     type: 'GET',
                     url: "/history/",
                     success: function (data) {
-                        $("#history_div").html(data);
+                        $("#history_div").html(history_json_as_table(data['history']));
                     }
                 });
-                forecast_by_id(tmp.forecast_id);
+                forecast_by_id(data.forecast_id);
             }
             else {
-                $("#parameter_error_msg").html(tmp.error_msg[0]);
+                $("#parameter_error_msg").html(data.error_msg[0]);
                 $("#parameter_error_msg").css('display', 'block')
             }
-
         }
     });
     return false;
