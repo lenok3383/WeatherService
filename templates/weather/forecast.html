@@ -24,21 +24,22 @@
         </nav>
     </div>
     <div class="container">
+        <!-- Forecast parameter and history-->
         <div class="row">
             <!-- parameter page -->
             <div class="col-xs-4 col-md-4 col-lg-4" id="parameter_div"></div>
             <!-- forecast history -->
             <div class="col-xs-8 col-md-8 col-lg-8" id="history_div"></div>
         </div>
+        <!-- spinner -->
         <div class="row" >
-            <!-- spinner -->
             <div class="col-xs-12 col-md-12 col-lg-12">
                 <p id="spinner" style="display: none; text-align: center">
                     <img src="{% static "img/ajax-loader_blue.gif" %}"/></p>
             </div>
         </div>
+        <!-- forecast -->
         <div class="row" >
-            <!-- forecast -->
             <div class="col-xs-12 col-xs-12" id="forecast_div"></div>
         </div>
     </div>

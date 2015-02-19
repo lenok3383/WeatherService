@@ -11,7 +11,7 @@ frm.submit(function () {
                     type: 'GET',
                     url: "/history/",
                     success: function (data) {
-                        $("#history_div").html(history_json_as_table(data['history']));
+                        $("#history_div").html(history_json_as_table(data));
                     }
                 });
                 forecast_by_id(data.forecast_id);

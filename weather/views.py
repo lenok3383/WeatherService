@@ -25,7 +25,6 @@ def anon_user(user):
 
 class ForecastView(DetailView):
     model = PreviousForecastModel
-    template_name = "weather/forecast_view.html"
     pk_url_kwarg = 'forecast_id'
     slug_url_kwarg = 'id'
 
@@ -177,7 +176,6 @@ class History(ListView):
                                     services_name=val.services_name)
         out = dict(history=out, paginator=dict(current=context[
             'page_obj'].number, maxpage=context['paginator'].num_pages))
-
         return HttpResponse(json.dumps(out), content_type="application/json")
 
 
