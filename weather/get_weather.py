@@ -38,11 +38,9 @@ class ResponseDataError(BaseWeatherException):
 
 class GetWeather(object):
 
-
     class ForecastData():
         city = None
         country = None
-        weather = {}
         min_temperature = None
         max_temperature = None
 
@@ -78,11 +76,15 @@ class GetWeather(object):
 
         try:
             if len(data['data']['request'][0]['query'].split(',')) == 2:
-                forecast_for.city = data['data']['request'][0]['query'].split(',')[0]
-                forecast_for.country = data['data']['request'][0]['query'].split(',')[1]
+                forecast_for.city = \
+                    data['data']['request'][0]['query'].split(',')[0]
+                forecast_for.country = \
+                    data['data']['request'][0]['query'].split(',')[1]
             else:
-                forecast_for.city = data['data']['request'][0]['query'].split(',')[1]
-                forecast_for.country = data['data']['request'][0]['query'].split(',')[2]
+                forecast_for.city = \
+                    data['data']['request'][0]['query'].split(',')[1]
+                forecast_for.country = \
+                    data['data']['request'][0]['query'].split(',')[2]
 
             data = data['data']['weather']
 
@@ -110,9 +112,8 @@ class GetWeather(object):
 
         try:
             data = json.loads(result)
-
-            if not data['query']['results']['weather']['rss']['channel']\
-                                        ['item'].has_key('forecast'):
+            if not data['query']['results']['weather']['rss']['channel'] \
+                    ['item'].has_key('forecast'):
                 raise ResponseDataError("Error. Invalid Input. City not found")
         except (TypeError, KeyError, ValueError):
             raise ResponseDataError("Error. Invalid Input. City not found1")
@@ -135,4 +136,3 @@ class GetWeather(object):
     def weather_by_service_name(self, service_name, city, day):
         function = self.WEATHER_SERVICES[str(service_name)]
         return function(self, city, day)
-

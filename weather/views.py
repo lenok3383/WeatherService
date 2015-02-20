@@ -83,13 +83,13 @@ class ForecastParamView(FormView):
         for field, val in form.errors.items():
             err_list.append(field.upper() + " - " + val)
         result = dict(error_msg=form.errors.items())
-        result.update(dict(form_valid=0, error_msg=err_list))
+        result.update(dict(form_valid=False, error_msg=err_list))
         return HttpResponse(json.dumps(result), content_type="application/json")
 
     def form_valid(self, form):
         form.instance.user_id = self.request.user.id
         data = form.save()
-        result = {'form_valid': 1, 'forecast_id': data.id}
+        result = dict(form_valid=True, forecast_id=data.id)
         return HttpResponse(json.dumps(result), content_type="application/json")
 
 
@@ -169,7 +169,7 @@ class History(ListView):
         return requests_history.order_by('-id')
 
     def render_to_response(self, context, **response_kwargs):
-        out = {}
+        out = dict()
         for number, val in enumerate(context['forecast_log']):
             out[str(number)] = dict(forecast_day=val.forecast_day, url=val.id,
                                     city=val.city,

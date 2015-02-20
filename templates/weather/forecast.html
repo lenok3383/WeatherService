@@ -29,7 +29,15 @@
             <!-- parameter page -->
             <div class="col-xs-4 col-md-4 col-lg-4" id="parameter_div"></div>
             <!-- forecast history -->
-            <div class="col-xs-8 col-md-8 col-lg-8" id="history_div"></div>
+            <div class="col-xs-8 col-md-8 col-lg-8" id="history_div">
+                <h3>History</h3>
+                <table class="table table-striped">
+                    <tbody id="history_table">
+                    </tbody>
+                </table>
+            <nav id="pagination">
+            </nav>
+            </div>
         </div>
         <!-- spinner -->
         <div class="row" >
@@ -40,7 +48,14 @@
         </div>
         <!-- forecast -->
         <div class="row" >
-            <div class="col-xs-12 col-xs-12" id="forecast_div"></div>
+            <div class="col-xs-12 col-xs-12" id="forecast_div">
+                <table class="table table-striped">
+                    <tbody id="forecast_table">
+                    </tbody>
+                </table>
+                    <div  id="error_msg">
+                    </div>
+            </div>
         </div>
     </div>
 </body>

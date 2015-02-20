@@ -1,24 +1,27 @@
 var frm = $('#param_form');
-frm.submit(function () {
+frm.submit(function() {
     $("#parameter_error_msg").css('display', 'none');
     $.ajax({
         type: frm.attr('method'),
         url: frm.attr('action'),
         data: frm.serialize(),
-        success: function (data) {
-            if (data.form_valid){
+        success: function(data) {
+            if (data['form_valid']) {
                 $.ajax({
                     type: 'GET',
                     url: "/history/",
-                    success: function (data) {
-                        $("#history_div").html(history_json_as_table(data));
+                    success: function(data) {
+                        cleanAllElementChild('history_table');
+                        historyJsonAsTable(data);
+                        cleanAllElementChild('pagination');
+                        historyPagination(data);
                     }
                 });
-                forecast_by_id(data.forecast_id);
+                forecastById(data['forecast_id']);
             }
             else {
-                $("#parameter_error_msg").html(data.error_msg[0]);
-                $("#parameter_error_msg").css('display', 'block')
+                $("#parameter_error_msg").html(data['error_msg'][0]).css(
+                    'display', 'block');
             }
         }
     });

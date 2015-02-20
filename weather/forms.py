@@ -8,7 +8,6 @@ CHOICES_SERVICES = (('0', 'yahoo'), ('1', 'world weather online'))
 
 
 class ForecastForm(forms.ModelForm):
-
     class Meta:
         model = PreviousForecastModel
         fields = ['city', 'services_name', 'forecast_day']
@@ -16,7 +15,7 @@ class ForecastForm(forms.ModelForm):
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.TextInput(
-                                attrs={'placeholder': 'E-mail address'}))
+        attrs={'placeholder': 'E-mail address'}))
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=False)
 
