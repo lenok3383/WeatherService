@@ -13,8 +13,9 @@ function forecastById(id) {
         },
         error: function(data){
             cleanAllElementChild('forecast_table_body');
-            createForecastTable(data);
             $("#spinner").hide();
+            showErrorMsg("Oops..     Request failed: " + data.statusText +
+            ". Please try again later.");
         }
     });
 }
@@ -111,6 +112,10 @@ function nextPage(){
             historyJsonAsTable(data);
             cleanAllElementChild('navigation_current');
             historyPagination();
+        },
+        error: function(data){
+            showErrorMsg("Oops..     Request failed: " + data.statusText +
+            ". Please try again later.");
         }
     });
 }
@@ -125,7 +130,11 @@ function prevPage(){
             historyJsonAsTable(data);
             cleanAllElementChild('navigation_current');
             historyPagination();
-            }
+            },
+        error: function(data){
+            alert("Oops.. \n Request failed: " + data.status + " " + data.statusText +
+            " \n Please try agana later.");
+        }
     });
 }
 
@@ -138,6 +147,17 @@ function loadHistoryDataShow() {
             historyJsonAsTable(data);
             cleanAllElementChild('navigation_current');
             historyPagination();
+        },
+        error: function (data) {
+            showErrorMsg("Oops..     Request failed: " + data.statusText +
+            ". Please try again later.");
         }
     });
+}
+function showErrorMsg (msg) {
+    $("#global_error_div").text(msg);
+    $("#global_error_div").show();
+    setTimeout(function(){
+        $("#global_error_div").hide();
+    }, 4000);
 }
