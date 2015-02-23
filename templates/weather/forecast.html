@@ -32,10 +32,21 @@
             <div class="col-xs-8 col-md-8 col-lg-8" id="history_div">
                 <h3>History</h3>
                 <table class="table table-striped">
-                    <tbody id="history_table">
+                    <thead>
+                        <th>City</th>
+                        <th>Date</th>
+                        <th>Services</th>
+                        <th>Urls</th>
+                    </thead>
+                    <tbody id="history_table_body">
                     </tbody>
                 </table>
-            <nav id="pagination">
+            <nav>
+                <ul class="pager">
+                    <li id="navigation_prev" class="previous" style="display: none"><a onclick="prevPage()">Prev</a></li>
+                    <span id="navigation_current" class="current"></span>
+                    <li class="next" id="navigation_next" style="display: none"><a onclick="nextPage()">Next</a></li>
+                </ul>
             </nav>
             </div>
         </div>
@@ -49,12 +60,17 @@
         <!-- forecast -->
         <div class="row" >
             <div class="col-xs-12 col-xs-12" id="forecast_div">
-                <table class="table table-striped">
-                    <tbody id="forecast_table">
+                <table id="forecast_table" class="table table-striped" style="display: none">
+                    <thead>
+                        <th>Location</th>
+                        <th>Minimal temperature</th>
+                        <th>Maximal temperature</th>
+                    </thead>
+                    <tbody id="forecast_table_body">
                     </tbody>
                 </table>
-                    <div  id="error_msg">
-                    </div>
+                <div id="error_msg" class="alert alert-danger" style="display: none" >
+                </div>
             </div>
         </div>
     </div>

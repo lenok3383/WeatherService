@@ -1,8 +1,5 @@
 var gCurrentPage;
 var gMaxPage;
-var gHeadersHistory = ["City", "Date", "Services", "Urls"];
-var gHeadersForecast = ["Location", "Minimal temperature", "Maximal temperature"];
-
 
 function forecastById(id) {
     $("#spinner").css('display', 'block');
@@ -10,12 +7,12 @@ function forecastById(id) {
         type: 'GET',
         url: "/forecast/".concat(String(id), "/"),
         success: function (forecast) {
-            cleanAllElementChild('forecast_table');
+            cleanAllElementChild('forecast_table_body');
             createForecastTable(forecast);
             $("#spinner").css('display', 'none');
         },
         error: function(data){
-            cleanAllElementChild('forecast_table');
+            cleanAllElementChild('forecast_table_body');
             createForecastTable(data);
             $("#spinner").css('display', 'none');
         }
@@ -23,32 +20,37 @@ function forecastById(id) {
 }
 
 function createForecastTable(data) {
-    var forecast_div = document.getElementById("forecast_div");
     if (data.hasOwnProperty('error_msg')) {
+
+        $("#forecast_table").css('display', 'none');
+        $("#error_msg").css('display', 'block');
+
         var error_div = document.getElementById('error_msg');
-        var err = document.createElement('div');
-        err.className = 'alert alert-danger';
         var txt = document.createTextNode(data['error_msg']);
-        err.appendChild(txt);
-        error_div.appendChild(err);
+        error_div.appendChild(txt);
+
     } else {
         cleanAllElementChild("error_msg");
-        var table = document.getElementById("forecast_table");
 
-        var row = document.createElement("tr");
-        table.appendChild(createTableHeader(gHeadersForecast));
-        row.appendChild(fillTableCell_Text(data['city'] + data['country']));
-        row.appendChild(fillTableCell_Text(data['min_temperature']));
-        row.appendChild(fillTableCell_Text(data['max_temperature']));
+        $("#error_msg").css('display', 'none');
+        $("#forecast_table").css('display', 'table');
 
-        table.appendChild(row);
-        table.className = "table table-striped";
+        var table = document.getElementById("forecast_table_body");
+        var rows = document.createElement("tr");
+        rows.appendChild(fillTableCell_Text(data['city'] + data['country']));
+        rows.appendChild(fillTableCell_Text(data['min_temperature']));
+        rows.appendChild(fillTableCell_Text(data['max_temperature']));
+
+        table.appendChild(rows);
     }
 }
 
 function historyJsonAsTable(data) {
-    var table = document.getElementById("history_table");
-    table.appendChild(createTableHeader(gHeadersHistory));
+    var table = document.getElementById("history_table_body");
+    gCurrentPage = data['paginator']['current'];
+    gMaxPage = data['paginator']['maxpage'];
+
+
     $.each(data['history'], function() {
         var rows = document.createElement("tr");
         rows.appendChild(fillTableCell_Text(this['city']));
@@ -59,41 +61,19 @@ function historyJsonAsTable(data) {
     });
 }
 
-function historyPagination(data){
-    gCurrentPage = data['paginator']['current'];
-    gMaxPage = data['paginator']['maxpage'];
-    navi_menu = document.getElementById('pagination');
-
-    var navi_button_next = document.createElement('li');
-    navi_button_next.className = 'next';
-    var next_page_url = document.createElement('a');
-    next_page_url.onclick = nextPage;
-    next_page_url.appendChild(document.createTextNode("Next"));
-    navi_button_next.appendChild(next_page_url);
-
-    var navi_status = document.createElement('span');
-    navi_button_next.className = 'current';
-    navi_status.appendChild(document.createTextNode("Page ".concat(gCurrentPage, ' of ', gMaxPage)));
-
-    var navi_button_prev = document.createElement('li');
-    navi_button_prev.className = 'previous';
-    var prev_page_url = document.createElement('a');
-    prev_page_url.onclick = prevPage;
-    prev_page_url.appendChild(document.createTextNode("Prev"));
-    navi_button_prev.appendChild(prev_page_url);
-
-    if (gMaxPage <= 1) {
-        navi_menu.appendText("No request yet");
-    } else if (gCurrentPage <= 1) {
-        navi_menu.appendChild(navi_status);
-        navi_menu.appendChild(navi_button_next);
-    } else if (gCurrentPage >= gMaxPage) {
-        navi_menu.appendChild(navi_status);
-        navi_menu.appendChild(navi_button_prev);
-    } else {
-        navi_menu.appendChild(navi_button_prev);
-        navi_menu.appendChild(navi_status);
-        navi_menu.appendChild(navi_button_next);
+function historyPagination(){
+    var navi_status = document.getElementById('navigation_current');
+    var txt = document.createTextNode("Page ".concat(gCurrentPage, ' of ', gMaxPage));
+    navi_status.appendChild(txt);
+    if (gCurrentPage != gMaxPage && gCurrentPage == 1) {
+        $('#navigation_prev').css('display', 'none');
+        $('#navigation_next').css('display', 'inline-block');
+    } else if (1 <= gCurrentPage && gCurrentPage < gMaxPage ){
+        $('#navigation_prev').css('display', 'inline-block');
+        $('#navigation_next').css('display', 'inline-block');
+    } else if (gMaxPage != 1 && gCurrentPage == gMaxPage ) {
+        $('#navigation_prev').css('display', 'inline-block');
+        $('#navigation_next').css('display', 'none');
     }
 }
 
@@ -102,17 +82,6 @@ function cleanAllElementChild(element_id){
     while (element.firstChild) {
         element.removeChild(element.firstChild);
     }
-}
-
-function createTableHeader(headers){
-    var tr = document.createElement("tr");
-    for (var i = 0; i < headers.length; i++){
-        var th = document.createElement("th");
-        var txt = document.createTextNode(headers[i]);
-        th.appendChild(txt);
-        tr.appendChild(th);
-    }
-    return tr;
 }
 
 function fillTableCell_Text(cellData){
@@ -138,10 +107,10 @@ function nextPage(){
         url: '/history/',
         data: {page: (gCurrentPage + 1)},
         success: function (data) {
-            cleanAllElementChild('history_table');
+            cleanAllElementChild('history_table_body');
             historyJsonAsTable(data);
-            cleanAllElementChild('pagination');
-            historyPagination(data);
+            cleanAllElementChild('navigation_current');
+            historyPagination();
         }
     });
 }
@@ -152,10 +121,10 @@ function prevPage(){
         url: '/history/',
         data: {page: (gCurrentPage - 1)},
         success: function (data) {
-            cleanAllElementChild('history_table');
+            cleanAllElementChild('history_table_body');
             historyJsonAsTable(data);
-            cleanAllElementChild('pagination');
-            historyPagination(data);
+            cleanAllElementChild('navigation_current');
+            historyPagination();
             }
     });
 }

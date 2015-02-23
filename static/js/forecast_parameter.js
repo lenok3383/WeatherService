@@ -11,10 +11,10 @@ frm.submit(function() {
                     type: 'GET',
                     url: "/history/",
                     success: function(data) {
-                        cleanAllElementChild('history_table');
+                        cleanAllElementChild('history_table_body');
                         historyJsonAsTable(data);
-                        cleanAllElementChild('pagination');
-                        historyPagination(data);
+                        cleanAllElementChild('navigation_current');
+                        historyPagination();
                     }
                 });
                 forecastById(data['forecast_id']);
