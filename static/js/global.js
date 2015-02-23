@@ -2,28 +2,29 @@ var gCurrentPage;
 var gMaxPage;
 
 function forecastById(id) {
-    $("#spinner").css('display', 'block');
+    $("#spinner").show();
     $.ajax({
         type: 'GET',
         url: "/forecast/".concat(String(id), "/"),
         success: function (forecast) {
             cleanAllElementChild('forecast_table_body');
             createForecastTable(forecast);
-            $("#spinner").css('display', 'none');
+            $("#spinner").hide();
         },
         error: function(data){
             cleanAllElementChild('forecast_table_body');
             createForecastTable(data);
-            $("#spinner").css('display', 'none');
+            $("#spinner").hide();
         }
     });
 }
 
 function createForecastTable(data) {
     if (data.hasOwnProperty('error_msg')) {
+        loadHistoryDataShow();
 
-        $("#forecast_table").css('display', 'none');
-        $("#error_msg").css('display', 'block');
+        $("#forecast_table").hide();
+        $("#error_msg").show();
 
         var error_div = document.getElementById('error_msg');
         var txt = document.createTextNode(data['error_msg']);
@@ -32,8 +33,8 @@ function createForecastTable(data) {
     } else {
         cleanAllElementChild("error_msg");
 
-        $("#error_msg").css('display', 'none');
-        $("#forecast_table").css('display', 'table');
+        $("#error_msg").hide();
+        $("#forecast_table").show();
 
         var table = document.getElementById("forecast_table_body");
         var rows = document.createElement("tr");
@@ -50,7 +51,6 @@ function historyJsonAsTable(data) {
     gCurrentPage = data['paginator']['current'];
     gMaxPage = data['paginator']['maxpage'];
 
-
     $.each(data['history'], function() {
         var rows = document.createElement("tr");
         rows.appendChild(fillTableCell_Text(this['city']));
@@ -66,14 +66,14 @@ function historyPagination(){
     var txt = document.createTextNode("Page ".concat(gCurrentPage, ' of ', gMaxPage));
     navi_status.appendChild(txt);
     if (gCurrentPage != gMaxPage && gCurrentPage == 1) {
-        $('#navigation_prev').css('display', 'none');
-        $('#navigation_next').css('display', 'inline-block');
+        $('#navigation_prev').hide();
+        $('#navigation_next').show();
     } else if (1 <= gCurrentPage && gCurrentPage < gMaxPage ){
-        $('#navigation_prev').css('display', 'inline-block');
-        $('#navigation_next').css('display', 'inline-block');
+        $('#navigation_prev').show();
+        $('#navigation_next').show();
     } else if (gMaxPage != 1 && gCurrentPage == gMaxPage ) {
-        $('#navigation_prev').css('display', 'inline-block');
-        $('#navigation_next').css('display', 'none');
+        $('#navigation_prev').show();
+        $('#navigation_next').hide();
     }
 }
 
@@ -126,5 +126,18 @@ function prevPage(){
             cleanAllElementChild('navigation_current');
             historyPagination();
             }
+    });
+}
+
+function loadHistoryDataShow() {
+    $.ajax({
+        type: 'GET',
+        url: "/history/",
+        success: function (data) {
+            cleanAllElementChild('history_table_body');
+            historyJsonAsTable(data);
+            cleanAllElementChild('navigation_current');
+            historyPagination();
+        }
     });
 }
