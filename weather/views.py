@@ -89,7 +89,7 @@ class ForecastParamView(FormView):
     def form_valid(self, form):
         form.instance.user_id = self.request.user.id
         data = form.save()
-        result = dict(form_valid=True, forecast_id=data.id)
+        result = dict(form_valid=True, forecast_id=data.id, city=data.city)
         return HttpResponse(json.dumps(result), content_type="application/json")
 
 

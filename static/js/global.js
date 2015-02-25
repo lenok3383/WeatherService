@@ -11,7 +11,7 @@ function forecastById(id) {
             createForecastTable(forecast);
             $("#spinner").hide();
         },
-        error: function(data){
+        error: function (data) {
             cleanAllElementChild('forecast_table_body');
             $("#spinner").hide();
             showErrorMsg("Oops..     Request failed: " + data.statusText +
@@ -28,6 +28,7 @@ function createForecastTable(data) {
         $("#error_msg").show();
 
         var error_div = document.getElementById('error_msg');
+        cleanAllElementChild('error_msg');
         var txt = document.createTextNode(data['error_msg']);
         error_div.appendChild(txt);
 
@@ -62,30 +63,30 @@ function historyJsonAsTable(data) {
     });
 }
 
-function historyPagination(){
+function historyPagination() {
     var navi_status = document.getElementById('navigation_current');
     var txt = document.createTextNode("Page ".concat(gCurrentPage, ' of ', gMaxPage));
     navi_status.appendChild(txt);
     if (gCurrentPage != gMaxPage && gCurrentPage == 1) {
         $('#navigation_prev').hide();
         $('#navigation_next').show();
-    } else if (1 <= gCurrentPage && gCurrentPage < gMaxPage ){
+    } else if (1 <= gCurrentPage && gCurrentPage < gMaxPage) {
         $('#navigation_prev').show();
         $('#navigation_next').show();
-    } else if (gMaxPage != 1 && gCurrentPage == gMaxPage ) {
+    } else if (gMaxPage != 1 && gCurrentPage == gMaxPage) {
         $('#navigation_prev').show();
         $('#navigation_next').hide();
     }
 }
 
-function cleanAllElementChild(element_id){
+function cleanAllElementChild(element_id) {
     var element = document.getElementById(String(element_id));
     while (element.firstChild) {
         element.removeChild(element.firstChild);
     }
 }
 
-function fillTableCell_Text(cellData){
+function fillTableCell_Text(cellData) {
     var td = document.createElement("td");
     var txt = document.createTextNode(String(cellData));
     td.appendChild(txt);
@@ -102,7 +103,7 @@ function fillTableCell_Urls(data) {
     return td;
 }
 
-function nextPage(){
+function nextPage() {
     $.ajax({
         type: 'GET',
         url: '/history/',
@@ -120,7 +121,7 @@ function nextPage(){
     });
 }
 
-function prevPage(){
+function prevPage() {
     $.ajax({
         type: 'GET',
         url: '/history/',
@@ -131,9 +132,9 @@ function prevPage(){
             cleanAllElementChild('navigation_current');
             historyPagination();
             },
-        error: function(data){
-            alert("Oops.. \n Request failed: " + data.status + " " + data.statusText +
-            " \n Please try agana later.");
+        error: function(data) {
+            showErrorMsg("Oops..     Request failed: " + data.statusText +
+            ". Please try again later.");
         }
     });
 }
@@ -154,10 +155,45 @@ function loadHistoryDataShow() {
         }
     });
 }
+
 function showErrorMsg (msg) {
-    $("#global_error_div").text(msg);
-    $("#global_error_div").show();
-    setTimeout(function(){
-        $("#global_error_div").hide();
+    $("#global_error_div").text(msg).show();
+    setTimeout(function() {
+        $("#global_error_div").text('').hide();
     }, 4000);
+}
+
+function getTemperatureDynamic(city){
+    $.ajax({
+        type: 'GET',
+        url: "http://api.worldweatheronline.com/free/v2/weather.ashx",
+        data: {q: String(city), format: 'json', num_of_days: '5', key: "caccf05de4bf3a130dcd49c9a79d5"},
+        success: function (forecastData) {
+            if (forecastData.hasOwnProperty('error') || forecastData == undefined) {
+                showErrorMsg("Oops.. Bad response from server. Please try again.");
+            } else {
+                var weather = forecastData['data']['weather'];
+                var chartData = [];
+                chartData.push(["Date", "Min. temperature", "Max. temperature"]);
+                for (var i=0; i < weather.length; i++) {
+                    var row = [];
+                    row.push(weather[String(i)]['date'],
+                        Number(weather[String(i)]['mintempC']),
+                        Number(weather[String(i)]['maxtempC']));
+                    chartData.push(row);
+                }
+                var data = google.visualization.arrayToDataTable(chartData);
+                var options = {
+                    title: 'Weather dynamic for ' + city,
+                    hAxis: {title: 'Days',  titleTextStyle: {color: '#333'}},
+                    vAxis: {title: 'Celsius', minValue: 0}
+                };
+                var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
+        },
+        error: function() {
+            showErrorMsg("Oops.. No response from server. Please try again later.");
+        }
+    });
 }

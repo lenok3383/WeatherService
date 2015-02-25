@@ -15,12 +15,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 LOGIN_URL = '/'
 
 TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'templates').replace('\\','/'),
-
+    os.path.join(BASE_DIR, 'templates').replace('\\', '/'),
 )
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static").replace('\\','/'),
+    os.path.join(BASE_DIR, "static").replace('\\', '/'),
 )
 
 # Quick-start development settings - unsuitable for production

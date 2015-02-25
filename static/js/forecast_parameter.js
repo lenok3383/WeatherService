@@ -9,6 +9,7 @@ frm.submit(function() {
             if (data['form_valid']) {
                 loadHistoryDataShow();
                 forecastById(data['forecast_id']);
+                getTemperatureDynamic(data['city']);
             }
             else {
                 $("#parameter_error_msg").html(data['error_msg'][0]).css(
