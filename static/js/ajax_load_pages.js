@@ -3,8 +3,9 @@ window.onload=function() {
         type: "GET",
         url: "/history/",
         success: function (data) {
-            historyJsonAsTable(data);
-            historyPagination(data);
+            historyPage.setHistoryData(data);
+            historyPage.historyJsonAsTable(data);
+            historyPage.refreshPaginationButtons();
         },
         error: function () {
             showErrorMsg("Something wrong. Please reload page.");

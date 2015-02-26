@@ -7,8 +7,8 @@ frm.submit(function() {
         data: frm.serialize(),
         success: function(data) {
             if (data['form_valid']) {
-                loadHistoryDataShow();
-                forecastById(data['forecast_id']);
+                historyPage.loadHistoryDataAndShow();
+                forecast.getForecastById(data['forecast_id']);
                 getTemperatureDynamic(data['city']);
             }
             else {

@@ -152,14 +152,18 @@ class RegistrationView(FormView):
 
 
 class History(ListView):
-    paginate_by = 10
     template_name = "weather/forecast_history.html"
     context_object_name = 'forecast_log'
+    current_page = 0
+    per_page = 10
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
+        if 'current_page' in request.GET and 'per_page' in request.GET:
+            self.current_page = int(request.GET['current_page'])
+            self.per_page = int(request.GET['per_page'])
         result = super(History, self).dispatch(request, *args, **kwargs)
         return result
 
@@ -170,13 +174,37 @@ class History(ListView):
 
     def render_to_response(self, context, **response_kwargs):
         out = dict()
+        tmp = list()
         for number, val in enumerate(context['forecast_log']):
-            out[str(number)] = dict(forecast_day=val.forecast_day, url=val.id,
-                                    city=val.city,
-                                    services_name=val.services_name)
-        out = dict(history=out, paginator=dict(current=context[
-            'page_obj'].number, maxpage=context['paginator'].num_pages))
+            tmp.append(dict(forecast_day=val.forecast_day,
+                               url=val.id,
+                               city=val.city,
+                               services_name=val.services_name))
+        if len(tmp) > self.per_page:
+            tmp = tmp[(self.current_page * self.per_page):
+                      (self.current_page * self.per_page + self.per_page)]
+
+        for index, vale in enumerate(tmp):
+            out[index] = tmp[index]
+        out = dict(history=tmp, paginator=dict(current=self.current_page,
+                                       per_page=self.per_page,
+                                       max_page=self.max_page(
+                                           len(context['forecast_log']),
+                                           self.per_page)))
         return HttpResponse(json.dumps(out), content_type="application/json")
+
+    def max_page(self, length, per_page):
+        if (length <= per_page):
+            result = 0
+        elif (length % per_page > 0):
+            result = length / per_page
+        else:
+            result = length / per_page - 1
+        return result
+
+
+
+
 
 
 class IndexPage(TemplateView):

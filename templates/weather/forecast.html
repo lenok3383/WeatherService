@@ -33,7 +33,15 @@
             </div>
             <!-- forecast history -->
             <div class="col-xs-8 col-md-8 col-lg-8" id="history_div">
-                <h3>History</h3>
+                <div class="col-xs-8 col-md-8 col-lg-8" >
+                    <h3>History</h3>
+                    </div>
+                <div class="col-xs-4 col-md-4 col-lg-4" >
+                    <label for="elements_per_page">Per page</label>
+                    <input type="number" class="form-control"
+                           onkeyup="historyPage.loadHistoryDataAndShow()"
+                           id="elements_per_page" name=elements_per_page" min="5"  value="10"/>
+                </div>
                 <table class="table table-striped">
                     <thead>
                         <th>City</th>
@@ -46,9 +54,9 @@
                 </table>
             <nav>
                 <ul class="pager">
-                    <li id="navigation_prev" class="previous" style="display: none"><a onclick="prevPage()">Prev</a></li>
+                    <li id="navigation_prev" class="previous" style="display: none"><a onclick= "historyPage.prevPage() ">Prev</a></li>
                     <span id="navigation_current" class="current"></span>
-                    <li class="next" id="navigation_next" style="display: none"><a onclick="nextPage()">Next</a></li>
+                    <li class="next" id="navigation_next" style="display: none"><a onclick="historyPage.nextPage(); ">Next</a></li>
                 </ul>
             </nav>
             </div>
@@ -79,7 +87,7 @@
             </div>
         </div>
         <div class="row">
-            <div id="chart_div" ></div>
+            <div id="chart_div" style="display: block"></div>
         </div>
     </div>
 </body>
