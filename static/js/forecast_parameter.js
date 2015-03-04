@@ -7,18 +7,16 @@ frm.submit(function() {
         data: frm.serialize(),
         success: function(data) {
             if (data['form_valid']) {
-                historyPage.loadHistoryDataAndShow();
+                historyPage.loadHistoryPage();
                 forecast.getForecastById(data['forecast_id']);
                 getTemperatureDynamic(data['city']);
             }
             else {
-                $("#parameter_error_msg").html(data['error_msg'][0]).css(
-                    'display', 'block');
+                $("#parameter_error_msg").html(data['error_msg'][0]).show();
             }
         },
         error: function (data) {
-            $("#parameter_error_msg").html("Oops.. " + data.statusText ).css(
-                'display', 'block');
+            $("#parameter_error_msg").html("Oops.. " + data.statusText ).show();
         }
     });
     return false;

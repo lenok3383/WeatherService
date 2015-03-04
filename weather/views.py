@@ -203,10 +203,6 @@ class History(ListView):
         return result
 
 
-
-
-
-
 class IndexPage(TemplateView):
     template_name = 'weather/forecast.html'
 

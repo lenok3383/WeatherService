@@ -1,16 +1,5 @@
 window.onload=function() {
-    $.ajax({
-        type: "GET",
-        url: "/history/",
-        success: function (data) {
-            historyPage.setHistoryData(data);
-            historyPage.historyJsonAsTable(data);
-            historyPage.refreshPaginationButtons();
-        },
-        error: function () {
-            showErrorMsg("Something wrong. Please reload page.");
-        }
-    });
+    historyPage.loadHistoryPage();
     $.ajax({
         type: 'GET',
         url: "/weather/",

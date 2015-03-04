@@ -1,68 +1,33 @@
-function BaseClass () {
-    this.fillTableCell_Text = function (cellData) {
-        var td = document.createElement("td");
-        var txt = document.createTextNode(String(cellData));
-        td.appendChild(txt);
-        return td;
-    };
-
-    this.fillTableCell_Urls = function (data) {
-        var td = document.createElement("td");
-        var elementA = document.createElement("a");
-        var txt = document.createTextNode('check');
-        elementA.onclick = function () {
-            forecast.getForecastById(data)
-        };
-        elementA.appendChild(txt);
-        td.appendChild(elementA);
-        return td;
-    };
-
-    this.cleanAllElementChild = function (element_id) {
-        var element = document.getElementById(String(element_id));
-        while (element.firstChild) {
-            element.removeChild(element.firstChild);
-        }
-   };
-
-    this.getNumberOfElementsOnPage = function () {
-        var number;
-        number= Number(document.getElementById("elements_per_page").value);
-        if (number < 5) {
-            document.getElementById("elements_per_page").value = 5;
-            number = 5;
-        }
-        return number;
-    };
+function  fillTableCell_Text (cellData) {
+    var td = document.createElement("td");
+    var txt = document.createTextNode(cellData);
+    td.appendChild(txt);
+    return td;
 }
-
 
 function Forecast() {
     var self = this;
 
     this.createForecastTable = function (data) {
         if (data.hasOwnProperty('error_msg')) {
-            historyPage.loadHistoryDataAndShow();
-
+            historyPage.loadHistoryPage();
             $("#forecast_table").hide();
-            $("#error_msg").show();
+            $("#error_msg").empty().show();
 
             var error_div = document.getElementById('error_msg');
-            self.baseFunc.cleanAllElementChild('error_msg');
             var txt = document.createTextNode(data['error_msg']);
             error_div.appendChild(txt);
 
         } else {
-            self.baseFunc.cleanAllElementChild("error_msg");
-
-            $("#error_msg").hide();
+            $("#error_msg").empty().hide();
+            $("#forecast_table_body").empty();
             $("#forecast_table").show();
 
             var table = document.getElementById("forecast_table_body");
             var rows = document.createElement("tr");
-            rows.appendChild(self.baseFunc.fillTableCell_Text(data['city'] + data['country']));
-            rows.appendChild(self.baseFunc.fillTableCell_Text(data['min_temperature']));
-            rows.appendChild(self.baseFunc.fillTableCell_Text(data['max_temperature']));
+            rows.appendChild(fillTableCell_Text(data['city'] + data['country']));
+            rows.appendChild(fillTableCell_Text(data['min_temperature']));
+            rows.appendChild(fillTableCell_Text(data['max_temperature']));
 
             table.appendChild(rows);
         }
@@ -74,12 +39,12 @@ function Forecast() {
             type: 'GET',
             url: "/forecast/".concat(String(id), "/"),
             success: function (forecast) {
-                self.baseFunc.cleanAllElementChild('forecast_table_body');
+                $('#forecast_table_body').empty();
                 self.createForecastTable(forecast);
                 $("#spinner").hide();
             },
             error: function (data) {
-                self.baseFunc.cleanAllElementChild('forecast_table_body');
+                $('#forecast_table_body').empty();
                 $("#spinner").hide();
                 showErrorMsg("Oops..     Request failed: " + data.statusText +
                 ". Please try again later.");
@@ -88,37 +53,36 @@ function Forecast() {
     };
 }
 
-
-function HistoryPagination () {
+function Pagination (perPageElementId) {
+    this.elementId = perPageElementId;
     this.currentPage = 0;
     this.perPage = null;
     this.maxPage = null;
     var self  = this;
 
-    this.setHistoryData = function(data){
+    this.setPaginationData = function(data){
         self.currentPage = data['paginator']['current'];
         self.perPage = data['paginator']['per_page'];
         self.maxPage = data['paginator']['max_page'];
     };
 
-    this.historyJsonAsTable = function (data) {
-        var table = document.getElementById("history_table_body");
-        $.each(data['history'], function() {
-            var rows = document.createElement("tr");
-            rows.appendChild(self.baseFunc.fillTableCell_Text(this['city']));
-            rows.appendChild(self.baseFunc.fillTableCell_Text(this['forecast_day']));
-            rows.appendChild(self.baseFunc.fillTableCell_Text(this['services_name']));
-            rows.appendChild(self.baseFunc.fillTableCell_Urls(this['url']));
-            table.appendChild(rows);
-        });
+    this.getNumberOfElementsOnPage = function () {
+        var number;
+        number = document.getElementById(self.elementId).value;
+        if (number < 5) {
+            document.getElementById(self.elementId).value = 5;
+            number = 5;
+        }
+        return number;
     };
 
     this.refreshPaginationButtons = function () {
         var navi_status = document.getElementById('navigation_current');
         var txt = document.createTextNode("Page ".concat(self.currentPage + 1, ' of ', self.maxPage + 1));
         navi_status.appendChild(txt);
+
         $('#navigation_prev').hide();
-        $('#navigation_next').hide()
+        $('#navigation_next').hide();
 
         if (self.currentPage != self.maxPage && self.currentPage == 0) {
             $('#navigation_prev').hide();
@@ -132,65 +96,71 @@ function HistoryPagination () {
         }
     };
 
+
+}
+
+function HistoryPaginated () {
+    var self  = this;
+
+    this.fillTableCell_Urls = function (data) {
+        var td = document.createElement("td");
+        var elementA = document.createElement("a");
+        var txt = document.createTextNode('check');
+        elementA.onclick = function () {
+            forecast.getForecastById(data)
+        };
+        elementA.appendChild(txt);
+        td.appendChild(elementA);
+        return td;
+    };
+
+    this.historyJsonToTable = function (dataPage) {
+            var table = document.getElementById("history_table_body");
+            $.each(dataPage['history'], function() {
+                var rows = document.createElement("tr");
+                rows.appendChild(fillTableCell_Text(this['city']));
+                rows.appendChild(fillTableCell_Text(this['forecast_day']));
+                rows.appendChild(fillTableCell_Text(this['services_name']));
+                rows.appendChild(self.fillTableCell_Urls(this['url']));
+                table.appendChild(rows);
+            });
+        };
+
     this.nextPage = function () {
-        $.ajax({
-            type: 'GET',
-            url: '/history/',
-            data: {current_page: (self.currentPage + 1),
-                   per_page: Number(self.baseFunc.getNumberOfElementsOnPage())},
-            success: function (data) {
-                self.setHistoryData(data);
-                self.baseFunc.cleanAllElementChild('history_table_body');
-                self.historyJsonAsTable(data);
-                self.baseFunc.cleanAllElementChild('navigation_current');
-                self.refreshPaginationButtons();
-            },
-            error: function (data) {
-                showErrorMsg("Oops..     Request failed: " + data.statusText +
-                ". Please try again later.");
-            }
-        });
+        self.loadHistoryPage({current_page: (self.pagination.currentPage + 1),
+                    per_page: Number(self.pagination.getNumberOfElementsOnPage()) });
     };
 
     this.prevPage = function () {
-        self.currentPage = self.currentPage - 1;
-        $.ajax({
-            type: 'GET',
-            url: '/history/',
-            data: {current_page: self.currentPage,
-                   per_page: Number(self.baseFunc.getNumberOfElementsOnPage())},
-            success: function (data) {
-                self.setHistoryData(data);
-                self.baseFunc.cleanAllElementChild('history_table_body');
-                self.historyJsonAsTable(data);
-                self.baseFunc.cleanAllElementChild('navigation_current');
-                self.refreshPaginationButtons();
-            },
-            error: function (data) {
-                showErrorMsg("Oops..     Request failed: " + data.statusText +
-                ". Please try again later.");
-            }
+        self.loadHistoryPage({
+            current_page: (self.pagination.currentPage - 1),
+            per_page: Number(self.pagination.getNumberOfElementsOnPage())
         });
     };
-    this.loadHistoryDataAndShow = function () {
+
+
+    this.loadHistoryPage = function (data) {
+        data = typeof data !== 'undefined' ? data : {
+                    current_page: 0,
+                    per_page: Number(historyPage.pagination.getNumberOfElementsOnPage()) };
         $.ajax({
-            type: 'GET',
+            type: "GET",
             url: "/history/",
-            data: {current_page: self.currentPage,
-                   per_page: Number(self.baseFunc.getNumberOfElementsOnPage())},
+            data: data,
             success: function (data) {
-                self.setHistoryData(data);
-                self.baseFunc.cleanAllElementChild('history_table_body');
-                self.historyJsonAsTable(data);
-                self.baseFunc.cleanAllElementChild('navigation_current');
-                self.refreshPaginationButtons();
+                $('#history_table_body').empty();
+                $('#navigation_current').empty();
+
+                self.historyJsonToTable(data);
+                self.pagination.setPaginationData(data);
+                self.pagination.refreshPaginationButtons();
             },
-            error: function (data) {
-                showErrorMsg("Oops..     Request failed: " + data.statusText +
-                ". Please try again later.");
+            error: function () {
+                showErrorMsg("Something wrong. Please reload page.");
             }
         });
-    };
+    }
+
 }
 
 function showErrorMsg (msg) {
@@ -237,7 +207,6 @@ function getTemperatureDynamic(city){
     });
 }
 
-Forecast.prototype.baseFunc = new BaseClass;
-HistoryPagination.prototype.baseFunc =  new BaseClass;
-var historyPage = new HistoryPagination();
+HistoryPaginated.prototype.pagination =  new Pagination("elements_per_page");
+var historyPage = new HistoryPaginated();
 var forecast = new Forecast();
