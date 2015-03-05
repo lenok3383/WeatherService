@@ -8,8 +8,8 @@ frm.submit(function() {
         success: function(data) {
             if (data['form_valid']) {
                 historyPage.loadHistoryPage();
-                forecast.getForecastById(data['forecast_id']);
-                getTemperatureDynamic(data['city']);
+                forecast.forecastById(data['forecast_id']);
+                temperatureDynamic(data['city']);
             }
             else {
                 $("#parameter_error_msg").html(data['error_msg'][0]).show();

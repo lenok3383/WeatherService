@@ -33,7 +33,7 @@ function Forecast() {
         }
     };
 
-    this.getForecastById = function (id) {
+    this.forecastById = function (id) {
         $("#spinner").show();
         $.ajax({
             type: 'GET',
@@ -55,45 +55,51 @@ function Forecast() {
 
 function Pagination (perPageElementId) {
     this.elementId = perPageElementId;
-    this.currentPage = 0;
-    this.perPage = null;
-    this.maxPage = null;
+
+    this.firstElelment = 0;
+    this.elelmentPerPage = 10;
+    this.maxElement = 10;
     var self  = this;
 
-    this.setPaginationData = function(data){
-        self.currentPage = data['paginator']['current'];
-        self.perPage = data['paginator']['per_page'];
-        self.maxPage = data['paginator']['max_page'];
+    this.refreshPaginationButtons = function () {
+        var navi_status = document.getElementById('navigation_current');
+        var txt = document.createTextNode("".concat(self.firstElelment, " - ",
+            (Number(self.firstElelment) + Number(self.elelmentPerPage))));
+        navi_status.appendChild(txt);
+
+        $('#navigation_prev').hide();
+        $('#navigation_next').hide();
+        if (self.firstElelment != self.maxElement && self.firstElelment == 0) {
+            $('#navigation_prev').hide();
+            $('#navigation_next').show();
+        } else if (0 <= self.firstElelment && Number(self.firstElelment) + Number(self.elelmentPerPage) < self.maxElement ) {
+            $('#navigation_prev').show();
+            $('#navigation_next').show();
+        } else if (Number(self.maxElement) != 0  ) {
+            $('#navigation_prev').show();
+            $('#navigation_next').hide();
+        }
     };
 
-    this.getNumberOfElementsOnPage = function () {
+    this.updateVal = function () {
+        $.ajax({
+            type: "GET",
+            url: "/history/",
+            data: {'get_size': '1'},
+            success: function (data) {
+                self.maxElement = data['size'];
+            },
+            error: function () {
+                showErrorMsg("Something wrong. Please reload page. NO SIZE.");
+            }
+        });
         var number;
         number = document.getElementById(self.elementId).value;
         if (number < 5) {
             document.getElementById(self.elementId).value = 5;
             number = 5;
         }
-        return number;
-    };
-
-    this.refreshPaginationButtons = function () {
-        var navi_status = document.getElementById('navigation_current');
-        var txt = document.createTextNode("Page ".concat(self.currentPage + 1, ' of ', self.maxPage + 1));
-        navi_status.appendChild(txt);
-
-        $('#navigation_prev').hide();
-        $('#navigation_next').hide();
-
-        if (self.currentPage != self.maxPage && self.currentPage == 0) {
-            $('#navigation_prev').hide();
-            $('#navigation_next').show();
-        } else if (0 <= self.currentPage && self.currentPage < self.maxPage) {
-            $('#navigation_prev').show();
-            $('#navigation_next').show();
-        } else if (self.maxPage != 0 && self.currentPage == self.maxPage) {
-            $('#navigation_prev').show();
-            $('#navigation_next').hide();
-        }
+        self.elelmentPerPage = number;
     };
 
 
@@ -107,7 +113,7 @@ function HistoryPaginated () {
         var elementA = document.createElement("a");
         var txt = document.createTextNode('check');
         elementA.onclick = function () {
-            forecast.getForecastById(data)
+            forecast.forecastById(data)
         };
         elementA.appendChild(txt);
         td.appendChild(elementA);
@@ -115,50 +121,50 @@ function HistoryPaginated () {
     };
 
     this.historyJsonToTable = function (dataPage) {
-            var table = document.getElementById("history_table_body");
-            $.each(dataPage['history'], function() {
-                var rows = document.createElement("tr");
-                rows.appendChild(fillTableCell_Text(this['city']));
-                rows.appendChild(fillTableCell_Text(this['forecast_day']));
-                rows.appendChild(fillTableCell_Text(this['services_name']));
-                rows.appendChild(self.fillTableCell_Urls(this['url']));
-                table.appendChild(rows);
-            });
-        };
-
-    this.nextPage = function () {
-        self.loadHistoryPage({current_page: (self.pagination.currentPage + 1),
-                    per_page: Number(self.pagination.getNumberOfElementsOnPage()) });
-    };
-
-    this.prevPage = function () {
-        self.loadHistoryPage({
-            current_page: (self.pagination.currentPage - 1),
-            per_page: Number(self.pagination.getNumberOfElementsOnPage())
+        var table = document.getElementById("history_table_body");
+        $.each(dataPage, function() {
+            var rows = document.createElement("tr");
+            rows.appendChild(fillTableCell_Text(this['city']));
+            rows.appendChild(fillTableCell_Text(this['forecast_day']));
+            rows.appendChild(fillTableCell_Text(this['services_name']));
+            rows.appendChild(self.fillTableCell_Urls(this['url']));
+            table.appendChild(rows);
         });
     };
 
+    this.nextPage = function () {
+        self.pagination.firstElelment += Number(self.pagination.elelmentPerPage);
+        self.loadHistoryPage(Number(self.pagination.firstElelment), Number(self.pagination.elelmentPerPage));
+    };
 
-    this.loadHistoryPage = function (data) {
-        data = typeof data !== 'undefined' ? data : {
-                    current_page: 0,
-                    per_page: Number(historyPage.pagination.getNumberOfElementsOnPage()) };
+    this.prevPage = function () {
+        self.pagination.firstElelment -= Number(self.pagination.elelmentPerPage);
+        self.loadHistoryPage(Number(self.pagination.firstElelment), Number(self.pagination.elelmentPerPage));
+    };
+
+
+    this.loadHistoryPage = function (first, perPage) {
+        self.pagination.updateVal();
+        first = typeof first !== 'undefined' ? first : 0;
+        perPage = typeof perPage !== 'undefined' ? perPage : self.pagination.elelmentPerPage;
+        console.log('data ->', first, perPage);
         $.ajax({
             type: "GET",
             url: "/history/",
-            data: data,
+            data: {first_elem: first, per_page: perPage },
             success: function (data) {
                 $('#history_table_body').empty();
                 $('#navigation_current').empty();
 
                 self.historyJsonToTable(data);
-                self.pagination.setPaginationData(data);
                 self.pagination.refreshPaginationButtons();
             },
             error: function () {
                 showErrorMsg("Something wrong. Please reload page.");
             }
         });
+        self.pagination.updateVal();
+
     }
 
 }
@@ -170,7 +176,7 @@ function showErrorMsg (msg) {
     }, 4000);
 }
 
-function getTemperatureDynamic(city){
+function temperatureDynamic(city){
     $.ajax({
         type: 'GET',
         url: "http://api.worldweatheronline.com/free/v2/weather.ashx",

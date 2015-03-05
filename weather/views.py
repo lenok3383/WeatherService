@@ -154,16 +154,19 @@ class RegistrationView(FormView):
 class History(ListView):
     template_name = "weather/forecast_history.html"
     context_object_name = 'forecast_log'
-    current_page = 0
-    per_page = 10
+    first_element = None
+    get_size = False
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        if 'current_page' in request.GET and 'per_page' in request.GET:
-            self.current_page = int(request.GET['current_page'])
+        if 'first_elem' in request.GET and 'per_page' in request.GET:
+            self.first_element = int(request.GET['first_elem'])
             self.per_page = int(request.GET['per_page'])
+        if 'get_size' in request.GET:
+            self.get_size = True
+
         result = super(History, self).dispatch(request, *args, **kwargs)
         return result
 
@@ -175,22 +178,21 @@ class History(ListView):
     def render_to_response(self, context, **response_kwargs):
         out = dict()
         tmp = list()
+        if self.get_size:
+            return HttpResponse(json.dumps({'size': len(context[
+                'forecast_log'])}), content_type="application/json")
+
         for number, val in enumerate(context['forecast_log']):
             tmp.append(dict(forecast_day=val.forecast_day,
                             url=val.id,
                             city=val.city,
                             services_name=val.services_name))
-        if len(tmp) > self.per_page:
-            tmp = tmp[(self.current_page * self.per_page):
-            (self.current_page * self.per_page + self.per_page)]
+
+        if self.first_element is not None:
+            tmp = tmp[self.first_element: (self.first_element + self.per_page)]
 
         for index, vale in enumerate(tmp):
             out[index] = tmp[index]
-        out = dict(history=tmp, paginator=dict(current=self.current_page,
-                                               per_page=self.per_page,
-                                               max_page=self.max_page(
-                                                   len(context['forecast_log']),
-                                                   self.per_page)))
         return HttpResponse(json.dumps(out), content_type="application/json")
 
     def max_page(self, length, per_page):
