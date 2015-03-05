@@ -177,20 +177,20 @@ class History(ListView):
         tmp = list()
         for number, val in enumerate(context['forecast_log']):
             tmp.append(dict(forecast_day=val.forecast_day,
-                               url=val.id,
-                               city=val.city,
-                               services_name=val.services_name))
+                            url=val.id,
+                            city=val.city,
+                            services_name=val.services_name))
         if len(tmp) > self.per_page:
             tmp = tmp[(self.current_page * self.per_page):
-                      (self.current_page * self.per_page + self.per_page)]
+            (self.current_page * self.per_page + self.per_page)]
 
         for index, vale in enumerate(tmp):
             out[index] = tmp[index]
         out = dict(history=tmp, paginator=dict(current=self.current_page,
-                                       per_page=self.per_page,
-                                       max_page=self.max_page(
-                                           len(context['forecast_log']),
-                                           self.per_page)))
+                                               per_page=self.per_page,
+                                               max_page=self.max_page(
+                                                   len(context['forecast_log']),
+                                                   self.per_page)))
         return HttpResponse(json.dumps(out), content_type="application/json")
 
     def max_page(self, length, per_page):
