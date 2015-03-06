@@ -152,21 +152,12 @@ class RegistrationView(FormView):
 
 
 class History(ListView):
-    template_name = "weather/forecast_history.html"
     context_object_name = 'forecast_log'
-    first_element = None
-    get_size = False
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        if 'first_elem' in request.GET and 'per_page' in request.GET:
-            self.first_element = int(request.GET['first_elem'])
-            self.per_page = int(request.GET['per_page'])
-        if 'get_size' in request.GET:
-            self.get_size = True
-
         result = super(History, self).dispatch(request, *args, **kwargs)
         return result
 
@@ -175,34 +166,50 @@ class History(ListView):
             user_id=self.request.user.id)
         return requests_history.order_by('-id')
 
-    def render_to_response(self, context, **response_kwargs):
+    def get_context_data(self, **kwargs):
         out = dict()
         tmp = list()
-        if self.get_size:
-            return HttpResponse(json.dumps({'size': len(context[
-                'forecast_log'])}), content_type="application/json")
+        context = super(History, self).get_context_data(**kwargs)
 
         for number, val in enumerate(context['forecast_log']):
             tmp.append(dict(forecast_day=val.forecast_day,
-                            url=val.id,
-                            city=val.city,
-                            services_name=val.services_name))
+                       url=val.id,
+                       city=val.city,
+                       services_name=val.services_name))
 
-        if self.first_element is not None:
-            tmp = tmp[self.first_element: (self.first_element + self.per_page)]
+        if 'start' in self.request.GET and 'count' in self.request.GET:
+            start = int(self.request.GET['start'])
+            count = int(self.request.GET['count'])
+            tmp = tmp[start: (start + count)]
 
         for index, vale in enumerate(tmp):
             out[index] = tmp[index]
-        return HttpResponse(json.dumps(out), content_type="application/json")
 
-    def max_page(self, length, per_page):
-        if (length <= per_page):
-            result = 0
-        elif (length % per_page > 0):
-            result = length / per_page
-        else:
-            result = length / per_page - 1
+        context['forecast_log'] = out
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        return HttpResponse(json.dumps(context['forecast_log']),
+                            content_type="application/json")
+
+
+class HistorySize(ListView):
+    context_object_name = 'forecast_log'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            return HttpResponseRedirect(reverse("index"))
+        result = super(HistorySize, self).dispatch(request, *args, **kwargs)
         return result
+
+    def get_queryset(self):
+        requests_history = PreviousForecastModel.objects.filter(
+            user_id=self.request.user.id)
+        return requests_history
+
+    def render_to_response(self, context, **response_kwargs):
+        return HttpResponse(json.dumps({'size': len(context[
+            'forecast_log'])}), content_type="application/json")
 
 
 class IndexPage(TemplateView):

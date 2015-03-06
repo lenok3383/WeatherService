@@ -75,7 +75,7 @@ function Pagination (perPageElementId) {
         } else if (0 <= self.firstElelment && Number(self.firstElelment) + Number(self.elelmentPerPage) < self.maxElement ) {
             $('#navigation_prev').show();
             $('#navigation_next').show();
-        } else if (Number(self.maxElement) != 0  ) {
+        } else if (Number(self.maxElement) != 0) {
             $('#navigation_prev').show();
             $('#navigation_next').hide();
         }
@@ -84,8 +84,7 @@ function Pagination (perPageElementId) {
     this.updateVal = function () {
         $.ajax({
             type: "GET",
-            url: "/history/",
-            data: {'get_size': '1'},
+            url: "/history/size/",
             success: function (data) {
                 self.maxElement = data['size'];
             },
@@ -101,7 +100,6 @@ function Pagination (perPageElementId) {
         }
         self.elelmentPerPage = number;
     };
-
 
 }
 
@@ -139,19 +137,20 @@ function HistoryPaginated () {
 
     this.prevPage = function () {
         self.pagination.firstElelment -= Number(self.pagination.elelmentPerPage);
+        if (self.pagination.firstElelment < 0) {
+            self.pagination.firstElelment = 0;
+        }
         self.loadHistoryPage(Number(self.pagination.firstElelment), Number(self.pagination.elelmentPerPage));
     };
 
-
-    this.loadHistoryPage = function (first, perPage) {
+    this.loadHistoryPage = function (startElem, countElem) {
         self.pagination.updateVal();
-        first = typeof first !== 'undefined' ? first : 0;
-        perPage = typeof perPage !== 'undefined' ? perPage : self.pagination.elelmentPerPage;
-        console.log('data ->', first, perPage);
+        startElem = typeof startElem !== 'undefined' ? startElem : 0;
+        countElem = typeof countElem !== 'undefined' ? countElem : self.pagination.elelmentPerPage;
         $.ajax({
             type: "GET",
             url: "/history/",
-            data: {first_elem: first, per_page: perPage },
+            data: {start: startElem, count: countElem },
             success: function (data) {
                 $('#history_table_body').empty();
                 $('#navigation_current').empty();
@@ -163,10 +162,7 @@ function HistoryPaginated () {
                 showErrorMsg("Something wrong. Please reload page.");
             }
         });
-        self.pagination.updateVal();
-
     }
-
 }
 
 function showErrorMsg (msg) {
@@ -180,7 +176,8 @@ function temperatureDynamic(city){
     $.ajax({
         type: 'GET',
         url: "http://api.worldweatheronline.com/free/v2/weather.ashx",
-        data: {q: String(city.replace('_',' ')), format: 'json', num_of_days: '5', key: "caccf05de4bf3a130dcd49c9a79d5"},
+        data: {q: String(city.replace('_',' ')), format: 'json',
+               num_of_days: '5', key: "caccf05de4bf3a130dcd49c9a79d5"},
         success: function (forecastData) {
             if (forecastData.hasOwnProperty('error') || forecastData == undefined) {
                 showErrorMsg("Oops.. Bad response from server. Please try again.");
