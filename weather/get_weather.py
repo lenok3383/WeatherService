@@ -69,7 +69,7 @@ class GetWeather(object):
 
         try:
             data = json.loads(result)
-            if data['data'].has_key('error'):
+            if 'error' in data['data']:
                 raise ResponseDataError("Error. Invalid Input. City not found")
         except (ValueError, LookupError):
             raise ResponseDataError("Error. Invalid Input. City not found")
@@ -112,8 +112,8 @@ class GetWeather(object):
 
         try:
             data = json.loads(result)
-            if not data['query']['results']['weather']['rss']['channel'] \
-                    ['item'].has_key('forecast'):
+            if 'forecast' not in data['query']['results']['weather'][
+                'rss']['channel']['item']:
                 raise ResponseDataError("Error. Invalid Input. City not found")
         except (TypeError, KeyError, ValueError):
             raise ResponseDataError("Error. Invalid Input. City not found1")
