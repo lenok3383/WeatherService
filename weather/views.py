@@ -1,7 +1,7 @@
 import json
 from django.contrib import auth
 from django.contrib.auth.forms import AuthenticationForm
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, View
 
 from django.views.generic.edit import FormView
 from django.views.generic.base import TemplateView
@@ -163,27 +163,19 @@ class History(ListView):
 
     def get_queryset(self):
         requests_history = PreviousForecastModel.objects.filter(
-            user_id=self.request.user.id)
-        return requests_history.order_by('-id')
-
-    def get_context_data(self, **kwargs):
-        out = dict()
-        tmp = list()
-        context = super(History, self).get_context_data(**kwargs)
-
-        for number, val in enumerate(context['forecast_log']):
-            tmp.append(dict(forecast_day=val.forecast_day,
-                       url=val.id,
-                       city=val.city,
-                       services_name=val.services_name))
-
+            user_id=self.request.user.id).order_by('-id')
         if 'start' in self.request.GET and 'count' in self.request.GET:
             start = int(self.request.GET['start'])
             count = int(self.request.GET['count'])
-            tmp = tmp[start: (start + count)]
+            requests_history = requests_history[start: (start + count)]
+        return requests_history.values()
 
-        for index, vale in enumerate(tmp):
-            out[index] = tmp[index]
+    def get_context_data(self, **kwargs):
+        out = dict()
+        context = super(History, self).get_context_data(**kwargs)
+
+        for number, val in enumerate(context['forecast_log']):
+            out[number] = val
 
         context['forecast_log'] = out
         return context
@@ -193,23 +185,15 @@ class History(ListView):
                             content_type="application/json")
 
 
-class HistorySize(ListView):
-    context_object_name = 'forecast_log'
+class HistorySize(View):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        result = super(HistorySize, self).dispatch(request, *args, **kwargs)
-        return result
-
-    def get_queryset(self):
-        requests_history = PreviousForecastModel.objects.filter(
-            user_id=self.request.user.id)
-        return requests_history
-
-    def render_to_response(self, context, **response_kwargs):
-        return HttpResponse(json.dumps({'size': len(context[
-            'forecast_log'])}), content_type="application/json")
+        tmp = PreviousForecastModel.objects.filter(
+            user_id=self.request.user.id).count()
+        return HttpResponse(json.dumps({'size': tmp}),
+                            content_type="application/json")
 
 
 class IndexPage(TemplateView):

@@ -81,7 +81,7 @@ function Pagination (perPageElementId) {
         } else if (0 <= self.firstElelment && Number(self.firstElelment) + Number(self.elelmentPerPage) < self.maxElement ) {
             $('#navigation_prev').show();
             $('#navigation_next').show();
-        } else if (Number(self.maxElement) != 0 ) {
+        } else if (Number(self.maxElement) != 0 && Number(self.elelmentPerPage) <= self.maxElement ) {
             $('#navigation_prev').show();
         }
     };
