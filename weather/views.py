@@ -170,19 +170,9 @@ class History(ListView):
             requests_history = requests_history[start: (start + count)]
         return requests_history.values()
 
-    def get_context_data(self, **kwargs):
-        out = dict()
-        context = super(History, self).get_context_data(**kwargs)
-
-        for number, val in enumerate(context['forecast_log']):
-            out[number] = val
-
-        context['forecast_log'] = out
-        return context
-
     def render_to_response(self, context, **response_kwargs):
-        return HttpResponse(json.dumps(context['forecast_log']),
-                            content_type="application/json")
+        out = [val for val in context['forecast_log']]
+        return HttpResponse(json.dumps(out), content_type="application/json")
 
 
 class HistorySize(View):

@@ -130,7 +130,7 @@ function HistoryPaginated () {
             rows.appendChild(fillTableCell_Text(this['city']));
             rows.appendChild(fillTableCell_Text(this['forecast_day']));
             rows.appendChild(fillTableCell_Text(this['services_name']));
-            rows.appendChild(self.fillTableCell_Urls(this['url']));
+            rows.appendChild(self.fillTableCell_Urls(this['id']));
             table.appendChild(rows);
         });
     };
