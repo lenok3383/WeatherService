@@ -168,6 +168,13 @@ class History(ListView):
             start = int(self.request.GET['start'])
             count = int(self.request.GET['count'])
             requests_history = requests_history[start: (start + count)]
+        elif 'start' in self.request.GET and 'count' not in self.request.GET:
+            start = int(self.request.GET['start'])
+            requests_history = requests_history[start:]
+        elif 'start' not in self.request.GET and 'count' in self.request.GET:
+            count = int(self.request.GET['count'])
+            requests_history = requests_history[:count]
+        print requests_history
         return requests_history.values()
 
     def render_to_response(self, context, **response_kwargs):
@@ -180,9 +187,9 @@ class HistorySize(View):
     def dispatch(self, request, *args, **kwargs):
         if not request.is_ajax():
             return HttpResponseRedirect(reverse("index"))
-        tmp = PreviousForecastModel.objects.filter(
+        total_size = PreviousForecastModel.objects.filter(
             user_id=self.request.user.id).count()
-        return HttpResponse(json.dumps({'size': tmp}),
+        return HttpResponse(json.dumps({'size': total_size}),
                             content_type="application/json")
 
 
